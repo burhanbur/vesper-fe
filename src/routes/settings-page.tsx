@@ -1,6 +1,8 @@
 import { useNavigate } from '@tanstack/react-router'
 import {
+  KeyRound,
   Plus,
+  Power,
   Settings,
   Smartphone,
   Tags,
@@ -31,12 +33,19 @@ import { Select } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAccountTypes, useCreateAccountType } from '@/features/accounts'
 import {
+  ApiKeyCreateDialog,
+  useApiKeys,
+  useDeleteApiKey,
+  useUpdateApiKey,
+} from '@/features/api-keys'
+import {
   useCategories,
   useCreateCategory,
   useDeleteCategory,
 } from '@/features/categories'
 import type { CategoryType } from '@/features/categories/types/category'
 import { useDevices, useProfile, useUpdateProfile } from '@/features/profile'
+import { formatDateTime } from '@/lib/formatters'
 
 export function SettingsPage() {
   const navigate = useNavigate()
@@ -66,8 +75,14 @@ export function SettingsPage() {
   const { data: accountTypes = [] } = useAccountTypes()
   const createType = useCreateAccountType()
 
-  // Devices
+  // Devices state
   const { data: devices = [] } = useDevices()
+
+  // API Keys state
+  const [apiKeyModalOpen, setApiKeyModalOpen] = useState(false)
+  const { data: apiKeys = [], isLoading: apiKeysLoading } = useApiKeys()
+  const updateApiKey = useUpdateApiKey()
+  const deleteApiKey = useDeleteApiKey()
 
   async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault()
@@ -130,6 +145,37 @@ export function SettingsPage() {
     }
   }
 
+  async function handleToggleApiKey(id: string, currentStatus: boolean) {
+    try {
+      await updateApiKey.mutateAsync({
+        id,
+        input: { is_active: !currentStatus },
+      })
+      toast.success(
+        currentStatus
+          ? 'API Key dinonaktifkan.'
+          : 'API Key diaktifkan kembali.',
+      )
+    } catch {
+      toast.error('Gagal mengubah status API Key.')
+    }
+  }
+
+  async function handleDeleteApiKey(id: string, name: string) {
+    if (
+      window.confirm(
+        `Cabut dan hapus API Key "${name}"? Aplikasi atau bot yang menggunakan kunci ini tidak akan bisa mengakses API lagi.`,
+      )
+    ) {
+      try {
+        await deleteApiKey.mutateAsync(id)
+        toast.success('API Key berhasil dihapus.')
+      } catch {
+        toast.error('Gagal menghapus API Key.')
+      }
+    }
+  }
+
   return (
     <AppShell onLogout={() => void navigate({ to: '/login', replace: true })}>
       <div className="space-y-6">
@@ -140,14 +186,14 @@ export function SettingsPage() {
             Pengaturan & Preferensi
           </h1>
           <p className="mt-1 text-sm text-slate-400">
-            Kelola data profil, master kategori keuangan, tipe akun, dan
-            perangkat Anda.
+            Kelola data profil, master kategori keuangan, tipe akun, perangkat,
+            dan API Keys Anda.
           </p>
         </div>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid max-w-xl grid-cols-4">
+          <TabsList className="grid max-w-2xl grid-cols-2 sm:grid-cols-5">
             <TabsTrigger value="profile">
               <User className="mr-1.5 hidden size-3.5 sm:inline" /> Profil
             </TabsTrigger>
@@ -161,6 +207,9 @@ export function SettingsPage() {
             <TabsTrigger value="devices">
               <Smartphone className="mr-1.5 hidden size-3.5 sm:inline" />{' '}
               Perangkat
+            </TabsTrigger>
+            <TabsTrigger value="api-keys">
+              <KeyRound className="mr-1.5 hidden size-3.5 sm:inline" /> API Keys
             </TabsTrigger>
           </TabsList>
 
@@ -208,7 +257,7 @@ export function SettingsPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <label
                       className="text-xs font-medium text-slate-300"
@@ -409,8 +458,147 @@ export function SettingsPage() {
               )}
             </Card>
           </TabsContent>
+
+          {/* Tab 5: API Keys */}
+          <TabsContent value="api-keys">
+            <Card className="space-y-4 p-6">
+              <div className="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="flex items-center gap-2 text-base font-bold text-white">
+                    <KeyRound className="size-4 text-indigo-400" />
+                    Manajemen API Keys
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Kunci akses aman untuk integrasi bot eksternal, automation,
+                    dan layanan machine-to-machine.
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => setApiKeyModalOpen(true)}
+                  className="gap-1.5 bg-indigo-600 text-white hover:bg-indigo-500"
+                >
+                  <Plus className="size-4" />
+                  Buat API Key Baru
+                </Button>
+              </div>
+
+              {apiKeysLoading ? (
+                <div className="py-12 text-center text-xs text-slate-400">
+                  Memuat daftar API Keys...
+                </div>
+              ) : apiKeys.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-slate-800 py-12 text-center">
+                  <KeyRound className="mx-auto mb-2 size-8 text-slate-600 opacity-60" />
+                  <p className="text-sm font-semibold text-slate-300">
+                    Belum ada API Key aktif
+                  </p>
+                  <p className="mx-auto mt-1 max-w-sm text-xs text-slate-500">
+                    Buat token API rahasia untuk mengizinkan skrip atau aplikasi
+                    pihak ketiga mengakses data finansial Anda secara aman.
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setApiKeyModalOpen(true)}
+                    className="mt-4 border-slate-700 text-xs"
+                  >
+                    <Plus className="mr-1 size-3.5" /> Buat Kunci Pertama
+                  </Button>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-800/80">
+                  {apiKeys.map((key) => (
+                    <div
+                      key={key.id}
+                      className="flex flex-col justify-between gap-4 py-4 sm:flex-row sm:items-center"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-sm font-semibold text-slate-100">
+                            {key.name}
+                          </span>
+                          {key.application ? (
+                            <Badge
+                              variant="outline"
+                              className="border-slate-700 bg-slate-800 text-[10px] text-slate-300"
+                            >
+                              {key.application}
+                            </Badge>
+                          ) : null}
+                          <Badge
+                            variant={key.is_active ? 'success' : 'secondary'}
+                            className="text-[10px]"
+                          >
+                            {key.is_active ? 'Aktif' : 'Nonaktif'}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
+                          <span className="rounded border border-slate-800 bg-slate-950 px-2 py-0.5 font-mono text-slate-300">
+                            {key.key_prefix}
+                          </span>
+                          <span>Batas: {key.rate_limit} req/menit</span>
+                          <span>Dibuat: {formatDateTime(key.created_at)}</span>
+                          {key.last_used_at ? (
+                            <span>
+                              Terakhir dipakai:{' '}
+                              {formatDateTime(key.last_used_at)}
+                            </span>
+                          ) : (
+                            <span className="text-slate-500">
+                              Belum pernah dipakai
+                            </span>
+                          )}
+                        </div>
+                        {key.description ? (
+                          <p className="pt-0.5 text-xs text-slate-400">
+                            {key.description}
+                          </p>
+                        ) : null}
+                      </div>
+
+                      <div className="flex shrink-0 items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            void handleToggleApiKey(key.id, key.is_active)
+                          }
+                          className={`border-slate-800 text-xs ${
+                            key.is_active
+                              ? 'text-amber-400 hover:bg-amber-500/10 hover:text-amber-300'
+                              : 'text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300'
+                          }`}
+                        >
+                          <Power className="mr-1 size-3.5" />
+                          {key.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            void handleDeleteApiKey(key.id, key.name)
+                          }
+                          className="text-xs text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+                        >
+                          <Trash2 className="mr-1 size-3.5" />
+                          Hapus
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
+
+      {/* Modal API Key */}
+      <ApiKeyCreateDialog
+        open={apiKeyModalOpen}
+        onOpenChange={setApiKeyModalOpen}
+      />
 
       {/* Create Category Modal */}
       <Dialog open={catModalOpen} onOpenChange={setCatModalOpen}>

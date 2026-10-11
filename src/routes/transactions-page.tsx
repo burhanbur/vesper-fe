@@ -3,12 +3,14 @@ import {
   ArrowDownRight,
   ArrowRightLeft,
   ArrowUpRight,
+  Download,
   Plus,
   ReceiptText,
   Search,
   Trash2,
 } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { AppShell } from '@/components/layout/app-shell'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -21,6 +23,7 @@ import { TransactionFormDialog } from '@/features/transactions/components/transa
 import { TransferFormDialog } from '@/features/transactions/components/transfer-form-dialog'
 import { useDeleteTransaction, useTransactions } from '@/features/transactions'
 import type { TransactionType } from '@/features/transactions/types/transaction'
+import { exportTransactionsToCsv } from '@/lib/csv-exporter'
 import { formatDateTime, formatRupiah } from '@/lib/formatters'
 
 export function TransactionsPage() {
@@ -64,6 +67,17 @@ export function TransactionsPage() {
     }
   }
 
+  function handleExportCsv() {
+    if (filteredTransactions.length === 0) {
+      toast.error('Tidak ada transaksi untuk diekspor.')
+      return
+    }
+    exportTransactionsToCsv(filteredTransactions, accountMap, categoryMap)
+    toast.success(
+      `Berhasil mengekspor ${filteredTransactions.length} transaksi ke CSV!`,
+    )
+  }
+
   return (
     <AppShell onLogout={() => void navigate({ to: '/login', replace: true })}>
       <div className="space-y-6">
@@ -79,7 +93,16 @@ export function TransactionsPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleExportCsv}
+              disabled={filteredTransactions.length === 0}
+              className="gap-1.5 border-slate-700 text-slate-300 hover:bg-slate-800"
+            >
+              <Download className="size-4 text-emerald-400" />
+              Ekspor CSV
+            </Button>
             <Button
               variant="default"
               onClick={() => {

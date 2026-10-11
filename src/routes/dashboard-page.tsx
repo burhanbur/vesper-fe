@@ -19,6 +19,7 @@ import { Progress } from '@/components/ui/progress'
 import { useAccounts } from '@/features/accounts'
 import { useAuth } from '@/features/auth'
 import { useBudgets } from '@/features/budgets'
+import { AssetAllocationChart, CashflowChart } from '@/features/dashboard'
 import { useInstruments } from '@/features/investments'
 import { TransactionFormDialog } from '@/features/transactions/components/transaction-form-dialog'
 import { TransferFormDialog } from '@/features/transactions/components/transfer-form-dialog'
@@ -75,7 +76,8 @@ export function DashboardPage() {
               </h1>
             </div>
             <p className="mt-1 text-sm text-slate-400">
-              Berikut adalah ringkasan aset, pengeluaran, dan portofolio Anda.
+              Berikut adalah ringkasan aset, arus kas, dan grafik portofolio
+              Anda.
             </p>
           </div>
 
@@ -182,6 +184,12 @@ export function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Visual Financial Analytics Section */}
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <CashflowChart income={incomeTotal} expense={expenseTotal} />
+          <AssetAllocationChart accounts={accounts} />
         </div>
 
         {/* Account Cards & Wallets Breakdown */}

@@ -18,6 +18,7 @@ import {
 import { useState, type ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth'
+import { NotificationDropdown } from '@/features/notifications'
 import { TransactionFormDialog } from '@/features/transactions/components/transaction-form-dialog'
 import { TransferFormDialog } from '@/features/transactions/components/transfer-form-dialog'
 
@@ -61,8 +62,8 @@ export function AppShell({ children, onLogout }: AppShellProps) {
               <Layers className="size-5" />
             </span>
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-base font-bold tracking-tight text-white">
+              <div className="flex items-center gap-2">
+                <span className="text-base font-extrabold tracking-tight text-white">
                   VESPER
                 </span>
                 <span className="rounded border border-indigo-500/30 bg-indigo-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-400">
@@ -161,6 +162,7 @@ export function AppShell({ children, onLogout }: AppShellProps) {
           </span>
         </div>
         <div className="flex items-center gap-2">
+          <NotificationDropdown />
           <Button
             size="sm"
             className="h-8 px-2.5 text-xs"
@@ -258,6 +260,8 @@ export function AppShell({ children, onLogout }: AppShellProps) {
                 year: 'numeric',
               }).format(new Date())}
             </span>
+            <div className="h-4 w-px bg-slate-800" />
+            <NotificationDropdown />
           </div>
         </div>
 
