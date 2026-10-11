@@ -4,6 +4,7 @@ import {
   ArrowRightLeft,
   ArrowUpRight,
   Download,
+  FolderSync,
   Plus,
   ReceiptText,
   Search,
@@ -94,6 +95,14 @@ export function TransactionsPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => void navigate({ to: '/import' })}
+              className="gap-1.5 border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20"
+            >
+              <FolderSync className="size-4 text-indigo-400" />
+              Impor Money Manager
+            </Button>
             <Button
               variant="outline"
               onClick={handleExportCsv}

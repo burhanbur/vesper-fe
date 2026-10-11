@@ -3,6 +3,7 @@ import {
   ArrowRightLeft,
   CheckCircle2,
   FolderKanban,
+  FolderSync,
   Layers,
   LayoutDashboard,
   LogOut,
@@ -34,6 +35,7 @@ const NAV_ITEMS = [
   { to: '/budgets', label: 'Anggaran (Budget)', icon: FolderKanban },
   { to: '/investments', label: 'Investasi & Portofolio', icon: TrendingUp },
   { to: '/groups', label: 'Grup Keuangan', icon: Users },
+  { to: '/import', label: 'Impor Money Manager', icon: FolderSync },
   { to: '/settings', label: 'Pengaturan', icon: Settings },
 ]
 

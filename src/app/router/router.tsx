@@ -10,6 +10,7 @@ import { AccountsPage } from '@/routes/accounts-page'
 import { BudgetsPage } from '@/routes/budgets-page'
 import { DashboardPage } from '@/routes/dashboard-page'
 import { GroupsPage } from '@/routes/groups-page'
+import { ImportPage } from '@/routes/import-page'
 import { InvestmentsPage } from '@/routes/investments-page'
 import { LoginPage } from '@/routes/login-page'
 import { NotFoundPage } from '@/routes/not-found-page'
@@ -103,6 +104,13 @@ const settingsRoute = createRoute({
   component: SettingsPage,
 })
 
+const importRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/import',
+  beforeLoad: requireAuth,
+  component: ImportPage,
+})
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
@@ -113,6 +121,7 @@ const routeTree = rootRoute.addChildren([
   investmentsRoute,
   groupsRoute,
   settingsRoute,
+  importRoute,
 ])
 
 export const router = createRouter({
