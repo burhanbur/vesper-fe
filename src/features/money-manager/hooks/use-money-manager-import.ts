@@ -168,7 +168,7 @@ export function useMoneyManagerImport() {
       let errorCount = 0
       const errors: ImportProgress['errors'] = []
 
-      const chunkSize = 5
+      const chunkSize = 10
       for (let i = 0; i < records.length; i += chunkSize) {
         const chunk = records.slice(i, i + chunkSize)
 

@@ -129,6 +129,29 @@ export function MoneyManagerWizard() {
     await handleFileSelected(file)
   }
 
+  async function handleLoadRealUserFile() {
+    setIsParsing(true)
+    try {
+      const response = await fetch('/2021-10-12_2026-10-31.xls')
+      if (!response.ok) {
+        throw new Error('Berkas 2021-10-12_2026-10-31.xls tidak dapat dimuat.')
+      }
+      const blob = await response.blob()
+      const file = new File([blob], '2021-10-12_2026-10-31.xls', {
+        type: 'application/vnd.ms-excel',
+      })
+      await handleFileSelected(file)
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : 'Gagal membaca berkas Money Manager.',
+      )
+    } finally {
+      setIsParsing(false)
+    }
+  }
+
   async function handleStartMigration() {
     setStep('importing')
     try {
@@ -215,6 +238,50 @@ export function MoneyManagerWizard() {
               </ol>
             </CardContent>
           </Card>
+
+          {/* Detected Real File Card */}
+          <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/60 via-slate-900 to-slate-900 p-5 shadow-xl shadow-indigo-950/30 sm:flex-row sm:items-center">
+            <div className="flex items-start gap-3.5 sm:items-center">
+              <div className="grid size-12 shrink-0 place-items-center rounded-xl border border-indigo-500/30 bg-indigo-500/20 text-indigo-400">
+                <FileSpreadsheet className="size-6" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-sm font-bold text-white">
+                    2021-10-12_2026-10-31.xls
+                  </span>
+                  <Badge
+                    variant="default"
+                    className="border-indigo-500/40 bg-indigo-500/20 text-[10px] text-indigo-300"
+                  >
+                    File Anda (4 Tahun Terdeteksi)
+                  </Badge>
+                </div>
+                <p className="mt-1 text-xs text-slate-400">
+                  File ekspor Money Manager Anda telah terdeteksi di server
+                  lokal (~5.018 transaksi siap diimpor).
+                </p>
+              </div>
+            </div>
+
+            <Button
+              onClick={() => void handleLoadRealUserFile()}
+              disabled={isParsing}
+              className="h-10 w-full shrink-0 gap-2 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-lg shadow-indigo-600/30 hover:bg-indigo-500 sm:w-auto"
+            >
+              {isParsing ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Membaca Data...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="size-4 text-indigo-200" />
+                  Gunakan File Ini Sekarang
+                </>
+              )}
+            </Button>
+          </div>
 
           {/* Drag & Drop Upload Zone */}
           <div

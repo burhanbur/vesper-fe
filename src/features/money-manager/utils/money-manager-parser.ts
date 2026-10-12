@@ -306,9 +306,7 @@ export function parseMoneyManagerType(
   return 'EXPENSE'
 }
 
-export async function parseMoneyManagerFile(
-  file: File,
-): Promise<{
+export async function parseMoneyManagerFile(file: File): Promise<{
   records: MoneyManagerRecord[]
   summary: MoneyManagerImportSummary
 }> {
