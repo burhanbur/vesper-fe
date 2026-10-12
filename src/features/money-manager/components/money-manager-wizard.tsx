@@ -12,7 +12,7 @@ import {
   UploadCloud,
   Wallet,
 } from 'lucide-react'
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -54,6 +54,68 @@ export function MoneyManagerWizard() {
   const { data: vesperAccounts = [] } = useAccounts()
   const { data: vesperCategories = [] } = useCategories()
 
+  // Map of account ID to AccountDto for quick hierarchy lookup
+  const accountMap = useMemo(() => {
+    return new Map(vesperAccounts.map((a) => [a.id, a]))
+  }, [vesperAccounts])
+
+  // Helper to format full hierarchical account display name (e.g. Jago - Main)
+  const getAccountDisplayName = useMemo(() => {
+    return (account: (typeof vesperAccounts)[number]): string => {
+      const parts: string[] = [account.name]
+      let currentParentId = account.parent_account_id
+      const visited = new Set<string>([account.id])
+
+      while (currentParentId && !visited.has(currentParentId)) {
+        visited.add(currentParentId)
+        const parent = accountMap.get(currentParentId)
+        if (parent) {
+          parts.unshift(parent.name)
+          currentParentId = parent.parent_account_id
+        } else {
+          break
+        }
+      }
+
+      return parts.join(' - ')
+    }
+  }, [accountMap])
+
+  // Sorted Vesper accounts with parent hierarchy in name
+  const sortedVesperAccounts = useMemo(() => {
+    return vesperAccounts
+      .map((acc) => ({
+        id: acc.id,
+        name: acc.name,
+        displayName: getAccountDisplayName(acc),
+      }))
+      .sort((a, b) =>
+        a.displayName.localeCompare(b.displayName, 'id-ID', {
+          sensitivity: 'base',
+          numeric: true,
+        }),
+      )
+  }, [vesperAccounts, getAccountDisplayName])
+
+  // Sorted unique Money Manager accounts from summary
+  const sortedUniqueAccounts = useMemo(() => {
+    if (!summary) return []
+    return [...summary.uniqueAccounts].sort((a, b) =>
+      a.localeCompare(b, 'id-ID', { sensitivity: 'base', numeric: true }),
+    )
+  }, [summary])
+
+  // Sorted unique Money Manager categories from summary
+  const sortedUniqueCategories = useMemo(() => {
+    if (!summary) return []
+    return [...summary.uniqueCategories].sort((a, b) =>
+      a.name.localeCompare(b.name, 'id-ID', {
+        sensitivity: 'base',
+        numeric: true,
+      }),
+    )
+  }, [summary])
+
   // Import Hook
   const { progress, executeImport, resetProgress } = useMoneyManagerImport()
 
@@ -67,9 +129,12 @@ export function MoneyManagerWizard() {
       // Auto-match accounts
       const initialAccMap: Record<string, string> = {}
       result.summary.uniqueAccounts.forEach((mmAcc) => {
-        const match = vesperAccounts.find(
-          (va) => va.name.toLowerCase().trim() === mmAcc.toLowerCase().trim(),
-        )
+        const cleanMMAcc = mmAcc.toLowerCase().trim()
+        const match = sortedVesperAccounts.find((va) => {
+          const cleanDisplay = va.displayName.toLowerCase().trim()
+          const cleanName = va.name.toLowerCase().trim()
+          return cleanDisplay === cleanMMAcc || cleanName === cleanMMAcc
+        })
         initialAccMap[mmAcc] = match ? match.id : 'NEW'
       })
       setAccountMappings(initialAccMap)
@@ -431,7 +496,7 @@ export function MoneyManagerWizard() {
             </div>
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              {summary.uniqueAccounts.map((mmAcc) => {
+              {sortedUniqueAccounts.map((mmAcc) => {
                 const currentVal = accountMappings[mmAcc] || 'NEW'
                 return (
                   <div
@@ -447,7 +512,7 @@ export function MoneyManagerWizard() {
                       </span>
                     </div>
 
-                    <div className="w-48 shrink-0">
+                    <div className="w-56 shrink-0">
                       <Select
                         value={currentVal}
                         onChange={(e) =>
@@ -459,9 +524,9 @@ export function MoneyManagerWizard() {
                         className="h-8 text-xs"
                       >
                         <option value="NEW">➕ Buat Akun Baru Otomatis</option>
-                        {vesperAccounts.map((va) => (
+                        {sortedVesperAccounts.map((va) => (
                           <option key={va.id} value={va.id}>
-                            Gunakan: {va.name}
+                            Gunakan: {va.displayName}
                           </option>
                         ))}
                       </Select>
@@ -486,7 +551,7 @@ export function MoneyManagerWizard() {
 
             <div className="max-h-60 space-y-2 overflow-y-auto pr-1">
               <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3">
-                {summary.uniqueCategories.map((mmCat) => (
+                {sortedUniqueCategories.map((mmCat) => (
                   <div
                     key={mmCat.name}
                     className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/40 p-2.5"
