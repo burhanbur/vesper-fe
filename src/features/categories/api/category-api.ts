@@ -11,13 +11,19 @@ export async function fetchCategories(params?: {
   type?: CategoryType
   account_id?: string
 }): Promise<CategoryDto[]> {
-  const response = await apiClient.get<ApiResponse<CategoryDto[]>>(
-    '/categories',
-    {
-      params: { limit: 100, ...params },
-    },
-  )
-  return response.data.data
+  const categories: CategoryDto[] = []
+  let page = 1
+  let lastPage = 1
+  do {
+    const response = await apiClient.get<ApiResponse<CategoryDto[]>>(
+      '/categories',
+      { params: { limit: 100, ...params, page } },
+    )
+    categories.push(...response.data.data)
+    lastPage = response.data.pagination?.last_page ?? page
+    page++
+  } while (page <= lastPage)
+  return categories
 }
 
 export async function createCategory(

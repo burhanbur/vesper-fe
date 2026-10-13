@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Target } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { CurrencyInput } from '@/components/ui/currency-input'
 import {
   Dialog,
   DialogDescription,
@@ -11,6 +12,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { useCategories } from '@/features/categories'
+import { parseCurrency, sanitizeCurrency } from '@/lib/currency'
 import { useCreateBudget } from '../hooks/use-budgets'
 import type { PeriodType } from '../types/budget'
 
@@ -41,8 +43,8 @@ export function BudgetFormDialog({
     e.preventDefault()
     setError(null)
 
-    const numAmount = parseFloat(amount)
-    if (Number.isNaN(numAmount) || numAmount <= 0) {
+    const numAmount = parseCurrency(amount)
+    if (numAmount <= 0) {
       setError('Masukkan batas nominal anggaran yang valid.')
       return
     }
@@ -55,7 +57,7 @@ export function BudgetFormDialog({
     try {
       await createBudget.mutateAsync({
         category_id: selectedCategory,
-        amount: numAmount.toFixed(2),
+        amount: sanitizeCurrency(amount, { toFixed: 2 }),
         period_type: periodType,
         anchor_date: anchorDate,
         base_currency: 'IDR',
@@ -120,14 +122,11 @@ export function BudgetFormDialog({
             >
               Batas Anggaran (Rp)
             </label>
-            <Input
+            <CurrencyInput
               id="bg-amount"
-              type="number"
-              min="1"
-              step="any"
-              placeholder="Contoh: 1500000"
+              placeholder="Contoh: 1.500.000 atau 1.5jt"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onRawChange={setAmount}
               required
             />
           </div>

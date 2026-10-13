@@ -59,5 +59,10 @@ export interface ImportProgress {
   errorCount: number
   accountsCreated: number
   categoriesCreated: number
-  errors: Array<{ index: number; description: string; error: string }>
+  errors: Array<{
+    index: number
+    description: string
+    error: string
+    retryable?: boolean
+  }>
 }

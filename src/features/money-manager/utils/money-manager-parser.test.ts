@@ -107,6 +107,32 @@ describe('money-manager-parser', () => {
     })
   })
 
+  it.each([false, true])(
+    'summarizes identical category names separately by type (reversed=%s)',
+    async (reversed) => {
+      const rows = [
+        '2026-10-01,Cash,Food,1000,Income',
+        '2026-10-02,Cash, food ,1000,Expense',
+        '2026-10-03,Cash,FOOD,1000,Expense',
+      ]
+      if (reversed) rows.reverse()
+      const file = new File(
+        ['Date,Account,Category,Amount,Type\n' + rows.join('\n')],
+        'categories.csv',
+      )
+      const { summary } = await parseMoneyManagerFile(file)
+      expect(summary.uniqueCategories).toHaveLength(2)
+      expect(
+        summary.uniqueCategories.map((category) => category.type).sort(),
+      ).toEqual(['EXPENSE', 'INCOME'])
+      expect(
+        summary.uniqueCategories.every(
+          (category) => category.name.trim().toLowerCase() === 'food',
+        ),
+      ).toBe(true)
+    },
+  )
+
   describe('sample template generation & roundtrip parsing', () => {
     it('generates a valid sample file blob and parses it with all records', async () => {
       const blob = generateSampleMoneyManagerFile()

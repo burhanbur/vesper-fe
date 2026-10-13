@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ArrowRightLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { CurrencyInput } from '@/components/ui/currency-input'
 import {
   Dialog,
   DialogDescription,
@@ -11,6 +12,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { useAccounts } from '@/features/accounts'
+import { parseCurrency, sanitizeCurrency } from '@/lib/currency'
 import { useCreateTransfer } from '../hooks/use-transactions'
 
 interface TransferFormDialogProps {
@@ -44,8 +46,8 @@ export function TransferFormDialog({
       return
     }
 
-    const numAmount = parseFloat(amount)
-    if (Number.isNaN(numAmount) || numAmount <= 0) {
+    const numAmount = parseCurrency(amount)
+    if (numAmount <= 0) {
       setError('Masukkan nominal transfer yang valid.')
       return
     }
@@ -54,7 +56,7 @@ export function TransferFormDialog({
       await createTransfer.mutateAsync({
         from_account_id: selectedFrom,
         to_account_id: selectedTo,
-        amount: numAmount.toFixed(2),
+        amount: sanitizeCurrency(amount, { toFixed: 2 }),
         transacted_at: new Date(date).toISOString(),
         description: description.trim() || null,
       })
@@ -139,14 +141,11 @@ export function TransferFormDialog({
             >
               Nominal (Rp)
             </label>
-            <Input
+            <CurrencyInput
               id="tf-amount"
-              type="number"
-              min="1"
-              step="any"
-              placeholder="Contoh: 100000"
+              placeholder="Contoh: 100.000 atau 100k"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onRawChange={setAmount}
               required
             />
           </div>

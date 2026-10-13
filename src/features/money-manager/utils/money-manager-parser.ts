@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx'
+import { categoryKey } from './category-key'
 import type {
   MoneyManagerImportSummary,
   MoneyManagerRecord,
@@ -358,7 +359,10 @@ export async function parseMoneyManagerFile(file: File): Promise<{
   let transferCount = 0
 
   const uniqueAccounts = new Set<string>()
-  const categoryMap = new Map<string, 'INCOME' | 'EXPENSE'>()
+  const categoryMap = new Map<
+    string,
+    { name: string; type: 'INCOME' | 'EXPENSE' }
+  >()
   let earliestDate: Date | null = null
   let latestDate: Date | null = null
 
@@ -417,11 +421,17 @@ export async function parseMoneyManagerFile(file: File): Promise<{
     if (type === 'INCOME') {
       incomeCount++
       totalIncome += amountParsed.num
-      categoryMap.set(categoryName, 'INCOME')
+      categoryMap.set(categoryKey(type, categoryName), {
+        name: categoryName,
+        type,
+      })
     } else if (type === 'EXPENSE') {
       expenseCount++
       totalExpense += amountParsed.num
-      categoryMap.set(categoryName, 'EXPENSE')
+      categoryMap.set(categoryKey(type, categoryName), {
+        name: categoryName,
+        type,
+      })
     } else {
       transferCount++
     }
@@ -449,12 +459,7 @@ export async function parseMoneyManagerFile(file: File): Promise<{
     )
   }
 
-  const uniqueCategories = Array.from(categoryMap.entries()).map(
-    ([name, catType]) => ({
-      name,
-      type: catType,
-    }),
-  )
+  const uniqueCategories = Array.from(categoryMap.values())
 
   const summary: MoneyManagerImportSummary = {
     fileName: file.name,

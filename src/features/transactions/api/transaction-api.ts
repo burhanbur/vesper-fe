@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { apiClient } from '@/lib/api-client'
 import type { ApiResponse } from '@/types/api'
 import type {
@@ -29,6 +30,21 @@ export async function createTransaction(
     input,
   )
   return response.data.data
+}
+
+export type BatchTransactionInput =
+  CreateTransactionInput | (CreateTransferInput & { type: 'TRANSFER' })
+
+const batchResultSchema = z.object({ count: z.number().int().nonnegative() })
+
+export async function createTransactionsBatch(
+  items: BatchTransactionInput[],
+): Promise<{ count: number }> {
+  const response = await apiClient.post<ApiResponse<unknown>>(
+    '/transactions/batch',
+    { items },
+  )
+  return batchResultSchema.parse(response.data.data)
 }
 
 export async function updateTransaction(

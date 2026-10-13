@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { CurrencyInput } from '@/components/ui/currency-input'
 import {
   Dialog,
   DialogDescription,
@@ -11,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { useAccounts } from '@/features/accounts'
 import { useCategories } from '@/features/categories'
+import { parseCurrency, sanitizeCurrency } from '@/lib/currency'
 import { useCreateTransaction } from '../hooks/use-transactions'
 
 interface TransactionFormDialogProps {
@@ -44,8 +46,8 @@ export function TransactionFormDialog({
     e.preventDefault()
     setError(null)
 
-    const numAmount = parseFloat(amount)
-    if (Number.isNaN(numAmount) || numAmount <= 0) {
+    const numAmount = parseCurrency(amount)
+    if (numAmount <= 0) {
       setError('Masukkan nominal transaksi yang valid.')
       return
     }
@@ -65,7 +67,7 @@ export function TransactionFormDialog({
         account_id: selectedAccount,
         category_id: selectedCategory,
         type,
-        amount: numAmount.toFixed(2),
+        amount: sanitizeCurrency(amount, { toFixed: 2 }),
         transacted_at: new Date(date).toISOString(),
         description: description.trim() || null,
       })
@@ -136,14 +138,11 @@ export function TransactionFormDialog({
             >
               Nominal (Rp)
             </label>
-            <Input
+            <CurrencyInput
               id="tx-amount"
-              type="number"
-              min="1"
-              step="any"
-              placeholder="Contoh: 50000"
+              placeholder="Contoh: 50.000 atau 50k"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onRawChange={setAmount}
               required
             />
           </div>

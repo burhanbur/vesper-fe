@@ -18,11 +18,12 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { Select } from '@/components/ui/select'
-import { useAccounts } from '@/features/accounts'
+import { Select2, type Select2Option } from '@/components/ui/select2'
+import { useAccounts, useAccountTypes } from '@/features/accounts'
 import { useCategories } from '@/features/categories'
 import { formatRupiah } from '@/lib/formatters'
 import { useMoneyManagerImport } from '../hooks/use-money-manager-import'
+import { categoryKey } from '../utils/category-key'
 import type {
   ImportStep,
   MoneyManagerImportSummary,
@@ -52,11 +53,28 @@ export function MoneyManagerWizard() {
 
   // Queries
   const { data: vesperAccounts = [] } = useAccounts()
+  const { data: vesperAccountTypes = [] } = useAccountTypes()
   const { data: vesperCategories = [] } = useCategories()
+
+  // Map of account type ID to AccountTypeDto
+  const accountTypeMap = useMemo(() => {
+    return new Map(vesperAccountTypes.map((t) => [t.id, t]))
+  }, [vesperAccountTypes])
 
   // Map of account ID to AccountDto for quick hierarchy lookup
   const accountMap = useMemo(() => {
     return new Map(vesperAccounts.map((a) => [a.id, a]))
+  }, [vesperAccounts])
+
+  // Set of all parent account IDs that currently have children
+  const parentAccountIds = useMemo(() => {
+    const ids = new Set<string>()
+    for (const acc of vesperAccounts) {
+      if (acc.parent_account_id) {
+        ids.add(acc.parent_account_id)
+      }
+    }
+    return ids
   }, [vesperAccounts])
 
   // Helper to format full hierarchical account display name (e.g. Jago - Main)
@@ -81,21 +99,56 @@ export function MoneyManagerWizard() {
     }
   }, [accountMap])
 
-  // Sorted Vesper accounts with parent hierarchy in name
+  // Sorted Vesper accounts (only leaf/child accounts; parent accounts with children are excluded)
   const sortedVesperAccounts = useMemo(() => {
     return vesperAccounts
-      .map((acc) => ({
-        id: acc.id,
-        name: acc.name,
-        displayName: getAccountDisplayName(acc),
-      }))
+      .filter((acc) => !parentAccountIds.has(acc.id))
+      .map((acc) => {
+        let typeName = accountTypeMap.get(acc.account_type_id)?.name
+        if (!typeName && acc.parent_account_id) {
+          const parent = accountMap.get(acc.parent_account_id)
+          if (parent) {
+            typeName = accountTypeMap.get(parent.account_type_id)?.name
+          }
+        }
+        return {
+          id: acc.id,
+          name: acc.name,
+          displayName: getAccountDisplayName(acc),
+          typeName,
+        }
+      })
       .sort((a, b) =>
         a.displayName.localeCompare(b.displayName, 'id-ID', {
           sensitivity: 'base',
           numeric: true,
         }),
       )
-  }, [vesperAccounts, getAccountDisplayName])
+  }, [
+    vesperAccounts,
+    parentAccountIds,
+    accountTypeMap,
+    accountMap,
+    getAccountDisplayName,
+  ])
+
+  // Select2 options for account mappings
+  const accountOptions = useMemo<Select2Option[]>(() => {
+    return [
+      {
+        value: 'NEW',
+        label: 'Buat Akun Baru Otomatis',
+        badge: 'Baru',
+        icon: <Sparkles className="size-3.5 text-indigo-400" />,
+      },
+      ...sortedVesperAccounts.map((va) => ({
+        value: va.id,
+        label: va.displayName,
+        badge: va.typeName,
+        icon: <Wallet className="size-3.5 text-slate-400" />,
+      })),
+    ]
+  }, [sortedVesperAccounts])
 
   // Sorted unique Money Manager accounts from summary
   const sortedUniqueAccounts = useMemo(() => {
@@ -144,9 +197,12 @@ export function MoneyManagerWizard() {
       result.summary.uniqueCategories.forEach((mmCat) => {
         const match = vesperCategories.find(
           (vc) =>
-            vc.name.toLowerCase().trim() === mmCat.name.toLowerCase().trim(),
+            categoryKey(vc.type, vc.name) ===
+            categoryKey(mmCat.type, mmCat.name),
         )
-        initialCatMap[mmCat.name] = match ? match.id : 'NEW'
+        initialCatMap[categoryKey(mmCat.type, mmCat.name)] = match
+          ? match.id
+          : 'NEW'
       })
       setCategoryMappings(initialCatMap)
 
@@ -217,20 +273,40 @@ export function MoneyManagerWizard() {
     }
   }
 
-  async function handleStartMigration() {
+  async function handleStartMigration(importRecords = records) {
     setStep('importing')
     try {
-      await executeImport({
-        records,
+      const result = await executeImport({
+        records: importRecords,
         accountMappings,
         categoryMappings,
       })
       setStep('completed')
-      toast.success('Migrasi data selesai!')
-    } catch {
-      toast.error('Terjadi kendala saat memproses migrasi data.')
+      if (result.errorCount > 0)
+        toast.warning(
+          'Migrasi belum berhasil sepenuhnya. Periksa rincian transaksi.',
+        )
+      else toast.success('Migrasi data selesai!')
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Terjadi kendala saat memproses migrasi data.',
+      )
       setStep('preview')
     }
+  }
+
+  function handleRetryFailed() {
+    const retryIndexes = new Set(
+      progress.errors
+        .filter((error) => error.retryable)
+        .map((error) => error.index),
+    )
+    const failedRecords = records.filter((record) =>
+      retryIndexes.has(record.rowIndex),
+    )
+    if (failedRecords.length > 0) void handleStartMigration(failedRecords)
   }
 
   function handleReset() {
@@ -512,24 +588,20 @@ export function MoneyManagerWizard() {
                       </span>
                     </div>
 
-                    <div className="w-56 shrink-0">
-                      <Select
+                    <div className="w-60 shrink-0 sm:w-72">
+                      <Select2
                         value={currentVal}
-                        onChange={(e) =>
+                        onChange={(val) =>
                           setAccountMappings((prev) => ({
                             ...prev,
-                            [mmAcc]: e.target.value,
+                            [mmAcc]: val,
                           }))
                         }
-                        className="h-8 text-xs"
-                      >
-                        <option value="NEW">➕ Buat Akun Baru Otomatis</option>
-                        {sortedVesperAccounts.map((va) => (
-                          <option key={va.id} value={va.id}>
-                            Gunakan: {va.displayName}
-                          </option>
-                        ))}
-                      </Select>
+                        options={accountOptions}
+                        size="sm"
+                        searchPlaceholder="Cari nama akun atau jenis..."
+                        emptyMessage="Akun tidak ditemukan."
+                      />
                     </div>
                   </div>
                 )
@@ -553,7 +625,7 @@ export function MoneyManagerWizard() {
               <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3">
                 {sortedUniqueCategories.map((mmCat) => (
                   <div
-                    key={mmCat.name}
+                    key={categoryKey(mmCat.type, mmCat.name)}
                     className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/40 p-2.5"
                   >
                     <span className="truncate text-xs font-medium text-slate-200">
@@ -689,16 +761,23 @@ export function MoneyManagerWizard() {
       {step === 'completed' ? (
         <Card className="space-y-6 border-emerald-500/30 bg-emerald-950/10 p-8 text-center">
           <div className="mx-auto grid size-16 place-items-center rounded-2xl border border-emerald-500/30 bg-emerald-500/15 text-emerald-400">
-            <CheckCircle2 className="size-9" />
+            {progress.errorCount > 0 ? (
+              <AlertCircle className="size-9 text-amber-400" />
+            ) : (
+              <CheckCircle2 className="size-9" />
+            )}
           </div>
 
           <div className="space-y-2">
             <h2 className="text-2xl font-black text-white">
-              Migrasi Data Berhasil! 🎉
+              {progress.errorCount > 0
+                ? 'Migrasi Belum Berhasil Sepenuhnya'
+                : 'Migrasi Data Berhasil! 🎉'}
             </h2>
             <p className="mx-auto max-w-lg text-sm text-slate-300">
-              Seluruh riwayat catatan keuangan Anda dari aplikasi Money Manager
-              telah sukses dipindahkan ke Vesper.
+              {progress.errorCount > 0
+                ? `${progress.successCount} transaksi berhasil diimpor; ${progress.errorCount} transaksi gagal atau belum diproses. Jangan impor ulang seluruh file karena transaksi yang sudah tersimpan dapat terduplikasi.`
+                : 'Seluruh riwayat catatan keuangan Anda dari aplikasi Money Manager telah sukses dipindahkan ke Vesper.'}
             </p>
           </div>
 
@@ -743,8 +822,8 @@ export function MoneyManagerWizard() {
             <div className="mx-auto max-w-xl space-y-1 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-left text-xs text-amber-300">
               <div className="flex items-center gap-1.5 font-semibold">
                 <AlertCircle className="size-4 shrink-0" />
-                Catatan: {progress.errors.length} transaksi dilewati karena
-                validasi:
+                Catatan: {progress.errors.length} transaksi gagal atau belum
+                diproses:
               </div>
               <ul className="max-h-24 list-inside list-disc space-y-0.5 overflow-y-auto text-[11px] text-amber-200/80">
                 {progress.errors.slice(0, 5).map((e, idx) => (
@@ -758,6 +837,11 @@ export function MoneyManagerWizard() {
 
           {/* Navigation Action Buttons */}
           <div className="flex flex-col items-center justify-center gap-3 pt-4 sm:flex-row">
+            {progress.errors.some((error) => error.retryable) ? (
+              <Button variant="outline" onClick={handleRetryFailed}>
+                Coba ulang hanya transaksi gagal
+              </Button>
+            ) : null}
             <Button
               onClick={() => void navigate({ to: '/transactions' })}
               className="w-full gap-2 bg-indigo-600 font-semibold text-white hover:bg-indigo-500 sm:w-auto"
