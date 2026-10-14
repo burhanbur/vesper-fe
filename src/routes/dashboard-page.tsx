@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import {
   ArrowDownRight,
   ArrowRightLeft,
@@ -19,7 +19,14 @@ import { Progress } from '@/components/ui/progress'
 import { useAccounts } from '@/features/accounts'
 import { useAuth } from '@/features/auth'
 import { useBudgets } from '@/features/budgets'
-import { AssetAllocationChart, CashflowChart } from '@/features/dashboard'
+import {
+  AssetAllocationChart,
+  CashflowChart,
+  DashboardPeriodFilter,
+  dashboardPeriodLabel,
+  dashboardPeriodRange,
+  useDashboardSummary,
+} from '@/features/dashboard'
 import { useInstruments } from '@/features/investments'
 import { TransactionFormDialog } from '@/features/transactions/components/transaction-form-dialog'
 import { TransferFormDialog } from '@/features/transactions/components/transfer-form-dialog'
@@ -28,6 +35,9 @@ import { formatDate, formatRupiah } from '@/lib/formatters'
 
 export function DashboardPage() {
   const navigate = useNavigate()
+  const search = useSearch({ from: '/dashboard' })
+  const range = dashboardPeriodRange(search)
+  const summary = useDashboardSummary(search)
   const { user } = useAuth()
 
   const [txModalOpen, setTxModalOpen] = useState(false)
@@ -38,8 +48,15 @@ export function DashboardPage() {
 
   // Data queries
   const { data: accounts = [], isLoading: accountsLoading } = useAccounts()
-  const { data: transactions = [], isLoading: txsLoading } = useTransactions({
-    limit: 10,
+  const {
+    data: transactions = [],
+    isLoading: txsLoading,
+    isError: txsError,
+    refetch: retryTransactions,
+  } = useTransactions({
+    limit: 7,
+    sort: '-transacted_at',
+    date_range: range.dateRange,
   })
   const { data: budgets = [] } = useBudgets()
   const { data: instruments = [] } = useInstruments()
@@ -49,15 +66,14 @@ export function DashboardPage() {
     .filter((acc) => acc.is_include_total && !acc.deleted_at)
     .reduce((sum, acc) => sum + parseFloat(acc.balance || '0'), 0)
 
-  const incomeTotal = transactions
-    .filter((t) => t.type === 'INCOME')
-    .reduce((sum, t) => sum + parseFloat(t.amount || '0'), 0)
-
-  const expenseTotal = transactions
-    .filter((t) => t.type === 'EXPENSE')
-    .reduce((sum, t) => sum + parseFloat(t.amount || '0'), 0)
-
-  const netCashflow = incomeTotal - expenseTotal
+  const incomeTotal = Number(summary.data?.income_total ?? 0)
+  const expenseTotal = Number(summary.data?.expense_total ?? 0)
+  const netCashflow = Number(summary.data?.net_cashflow ?? 0)
+  const cashflowStatus = summary.isError
+    ? 'Tidak tersedia'
+    : summary.isPending
+      ? 'Memuat…'
+      : undefined
 
   function openQuickAdd(type: 'INCOME' | 'EXPENSE') {
     setTxModalType(type)
@@ -112,6 +128,38 @@ export function DashboardPage() {
           </div>
         </div>
 
+        <DashboardPeriodFilter
+          search={search}
+          onChange={(nextSearch) =>
+            void navigate({ to: '/dashboard', search: nextSearch })
+          }
+        />
+        <p className="text-sm text-slate-400">
+          Arus kas: {dashboardPeriodLabel(search)} (WIB). Kekayaan bersih, saldo
+          rekening, dan alokasi aset menunjukkan kondisi saat ini, bukan periode
+          terpilih.
+        </p>
+        {summary.isError && (
+          <div
+            role="alert"
+            className="flex items-center gap-3 text-sm text-rose-400"
+          >
+            Ringkasan arus kas gagal dimuat.
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void summary.refetch()}
+            >
+              Coba lagi ringkasan
+            </Button>
+          </div>
+        )}
+        {summary.isFetching && !summary.isPending && (
+          <p role="status" className="text-sm text-slate-400">
+            Memperbarui arus kas…
+          </p>
+        )}
+
         {/* Net Worth & Cashflow Highlight Cards */}
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
           {/* Total Net Worth */}
@@ -139,14 +187,14 @@ export function DashboardPage() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold tracking-wider text-emerald-400 uppercase">
-                  Total Pemasukan (Bulan Ini)
+                  Total Pemasukan (Periode Terpilih)
                 </span>
                 <span className="grid size-7 place-items-center rounded-lg bg-emerald-500/15 text-emerald-400">
                   <ArrowDownRight className="size-4" />
                 </span>
               </div>
               <CardTitle className="pt-1 text-2xl font-extrabold tracking-tight text-emerald-400 sm:text-3xl">
-                {txsLoading ? 'Memuat…' : formatRupiah(incomeTotal)}
+                {cashflowStatus ?? formatRupiah(incomeTotal)}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -161,25 +209,24 @@ export function DashboardPage() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold tracking-wider text-rose-400 uppercase">
-                  Total Pengeluaran (Bulan Ini)
+                  Total Pengeluaran (Periode Terpilih)
                 </span>
                 <span className="grid size-7 place-items-center rounded-lg bg-rose-500/15 text-rose-400">
                   <ArrowUpRight className="size-4" />
                 </span>
               </div>
               <CardTitle className="pt-1 text-2xl font-extrabold tracking-tight text-rose-400 sm:text-3xl">
-                {txsLoading ? 'Memuat…' : formatRupiah(expenseTotal)}
+                {cashflowStatus ?? formatRupiah(expenseTotal)}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between text-xs text-slate-400">
                 <span>Net Savings:</span>
                 <span
-                  className={`font-semibold ${
-                    netCashflow >= 0 ? 'text-emerald-400' : 'text-rose-400'
-                  }`}
+                  className={`font-semibold ${netCashflow >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                    }`}
                 >
-                  {formatRupiah(netCashflow)}
+                  {cashflowStatus ?? formatRupiah(netCashflow)}
                 </span>
               </div>
             </CardContent>
@@ -188,7 +235,15 @@ export function DashboardPage() {
 
         {/* Visual Financial Analytics Section */}
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <CashflowChart income={incomeTotal} expense={expenseTotal} />
+          {cashflowStatus ? (
+            <Card>
+              <CardContent className="p-8" role="status">
+                Arus kas: {cashflowStatus}
+              </CardContent>
+            </Card>
+          ) : (
+            <CashflowChart income={incomeTotal} expense={expenseTotal} />
+          )}
           <AssetAllocationChart accounts={accounts} />
         </div>
 
@@ -281,6 +336,17 @@ export function DashboardPage() {
                 <div className="p-8 text-center text-sm text-slate-400">
                   Memuat daftar transaksi…
                 </div>
+              ) : txsError ? (
+                <div role="alert" className="p-8 text-sm text-rose-400">
+                  Transaksi gagal dimuat.{' '}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void retryTransactions()}
+                  >
+                    Coba lagi transaksi
+                  </Button>
+                </div>
               ) : transactions.length === 0 ? (
                 <div className="p-10 text-center">
                   <ReceiptText className="mx-auto mb-2 size-10 text-slate-600" />
@@ -310,13 +376,12 @@ export function DashboardPage() {
                     >
                       <div className="flex min-w-0 items-center gap-3">
                         <span
-                          className={`grid size-9 place-items-center rounded-xl text-sm ${
-                            isIncome
+                          className={`grid size-9 place-items-center rounded-xl text-sm ${isIncome
                               ? 'bg-emerald-500/15 text-emerald-400'
                               : isTransfer
                                 ? 'bg-sky-500/15 text-sky-400'
                                 : 'bg-rose-500/15 text-rose-400'
-                          }`}
+                            }`}
                         >
                           {isIncome ? (
                             <ArrowDownRight className="size-4" />
@@ -343,13 +408,12 @@ export function DashboardPage() {
 
                       <div className="shrink-0 text-right">
                         <span
-                          className={`font-mono text-sm font-bold tracking-tight ${
-                            isIncome
+                          className={`font-mono text-sm font-bold tracking-tight ${isIncome
                               ? 'text-emerald-400'
                               : isTransfer
                                 ? 'text-sky-400'
                                 : 'text-rose-400'
-                          }`}
+                            }`}
                         >
                           {isIncome ? '+' : isTransfer ? '' : '-'}
                           {formatRupiah(tx.amount)}

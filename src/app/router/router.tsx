@@ -4,8 +4,11 @@ import {
   createRouter,
   redirect,
 } from '@tanstack/react-router'
+import { z } from 'zod'
+import { AccountDetailPage } from '@/routes/account-detail-page'
 import { RootLayout } from '@/app/router/root-layout'
 import { authSession } from '@/features/auth'
+import { validateDashboardSearch } from '@/features/dashboard'
 import { AccountsPage } from '@/routes/accounts-page'
 import { BudgetsPage } from '@/routes/budgets-page'
 import { DashboardPage } from '@/routes/dashboard-page'
@@ -58,6 +61,7 @@ function requireAuth() {
 const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/dashboard',
+  validateSearch: validateDashboardSearch,
   beforeLoad: requireAuth,
   component: DashboardPage,
 })
@@ -67,6 +71,18 @@ const accountsRoute = createRoute({
   path: '/accounts',
   beforeLoad: requireAuth,
   component: AccountsPage,
+})
+
+const accountDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/accounts/$accountId',
+  params: {
+    parse: (params) => ({
+      accountId: z.string().uuid().parse(params.accountId),
+    }),
+  },
+  beforeLoad: requireAuth,
+  component: AccountDetailPage,
 })
 
 const transactionsRoute = createRoute({
@@ -116,6 +132,7 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   dashboardRoute,
   accountsRoute,
+  accountDetailRoute,
   transactionsRoute,
   budgetsRoute,
   investmentsRoute,

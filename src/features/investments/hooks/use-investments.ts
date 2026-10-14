@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { accountKeys } from '@/features/accounts/hooks/use-accounts'
+import { dashboardKeys } from '@/features/dashboard'
 import {
   createInstrument,
   createInvestmentTransaction,
@@ -86,6 +87,8 @@ export function useCreateInvestmentTransaction() {
     mutationFn: (input: CreateInvestmentTransactionInput) =>
       createInvestmentTransaction(input),
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
+      void queryClient.invalidateQueries({ queryKey: ['transactions'] })
       void queryClient.invalidateQueries({ queryKey: investmentKeys.all })
       void queryClient.invalidateQueries({ queryKey: accountKeys.all })
     },

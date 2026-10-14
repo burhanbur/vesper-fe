@@ -39,6 +39,7 @@ import {
   useUpdateApiKey,
 } from '@/features/api-keys'
 import {
+  CategoryGroups,
   useCategories,
   useCreateCategory,
   useDeleteCategory,
@@ -329,42 +330,12 @@ export function SettingsPage() {
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-                {categories.map((c) => (
-                  <div
-                    key={c.id}
-                    className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 p-3.5"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-lg">
-                        {c.type === 'INCOME' ? '💰' : '💸'}
-                      </span>
-                      <div>
-                        <p className="text-sm font-semibold text-slate-100">
-                          {c.name}
-                        </p>
-                        <Badge
-                          variant={
-                            c.type === 'INCOME' ? 'success' : 'destructive'
-                          }
-                          className="text-[10px]"
-                        >
-                          {c.type}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => void handleDeleteCategory(c.id, c.version)}
-                      className="rounded p-1 text-slate-500 hover:text-rose-400"
-                      title="Hapus Kategori"
-                    >
-                      <Trash2 className="size-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+              <CategoryGroups
+                categories={categories}
+                onDelete={(id, version) =>
+                  void handleDeleteCategory(id, version)
+                }
+              />
             </Card>
           </TabsContent>
 
@@ -564,11 +535,10 @@ export function SettingsPage() {
                           onClick={() =>
                             void handleToggleApiKey(key.id, key.is_active)
                           }
-                          className={`border-slate-800 text-xs ${
-                            key.is_active
+                          className={`border-slate-800 text-xs ${key.is_active
                               ? 'text-amber-400 hover:bg-amber-500/10 hover:text-amber-300'
                               : 'text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300'
-                          }`}
+                            }`}
                         >
                           <Power className="mr-1 size-3.5" />
                           {key.is_active ? 'Nonaktifkan' : 'Aktifkan'}

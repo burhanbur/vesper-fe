@@ -5,6 +5,7 @@ import {
   Eye,
   EyeOff,
   FolderTree,
+  Info,
   Plus,
   Trash2,
   Wallet,
@@ -123,9 +124,9 @@ export function AccountsPage() {
               // If account has children, calculate aggregated balance
               const totalBalance = hasChildren
                 ? children.reduce(
-                    (sum, c) => sum + parseFloat(c.balance || '0'),
-                    0,
-                  )
+                  (sum, c) => sum + parseFloat(c.balance || '0'),
+                  0,
+                )
                 : parseFloat(parent.balance || '0')
 
               return (
@@ -134,7 +135,7 @@ export function AccountsPage() {
                   className="overflow-hidden border-slate-800/90"
                 >
                   {/* Parent Account Header */}
-                  <div className="hover:bg-slate-850/80 flex items-center justify-between bg-slate-900/90 p-4 transition-colors sm:p-5">
+                  <div className="hover:bg-slate-850/80 flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 p-4 transition-colors sm:p-5">
                     <div className="flex min-w-0 items-center gap-3.5">
                       {hasChildren ? (
                         <button
@@ -207,6 +208,19 @@ export function AccountsPage() {
                       </div>
 
                       <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            void navigate({
+                              to: '/accounts/$accountId',
+                              params: { accountId: parent.id },
+                            })
+                          }
+                          aria-label={`Lihat detail akun ${parent.name}`}
+                        >
+                          <Info className="size-4" aria-hidden="true" />
+                        </Button>
                         <button
                           type="button"
                           onClick={() => void handleToggleVisible(parent)}
@@ -239,7 +253,7 @@ export function AccountsPage() {
                       {children.map((child) => (
                         <div
                           key={child.id}
-                          className="flex items-center justify-between p-3.5 pr-4 transition-colors hover:bg-slate-800/25"
+                          className="flex flex-wrap items-center justify-between gap-3 p-3.5 pr-4 transition-colors hover:bg-slate-800/25"
                         >
                           <div className="flex min-w-0 items-center gap-3">
                             <FolderTree className="size-4 shrink-0 text-indigo-400" />
@@ -259,6 +273,19 @@ export function AccountsPage() {
                             <span className="font-mono text-sm font-semibold text-slate-100">
                               {formatRupiah(child.balance)}
                             </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() =>
+                                void navigate({
+                                  to: '/accounts/$accountId',
+                                  params: { accountId: child.id },
+                                })
+                              }
+                              aria-label={`Lihat detail akun ${child.name}`}
+                            >
+                              <Info className="size-4" aria-hidden="true" />
+                            </Button>
                             <button
                               type="button"
                               onClick={() => void handleDelete(child)}

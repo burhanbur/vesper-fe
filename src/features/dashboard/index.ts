@@ -1,2 +1,5 @@
 export * from './components/cashflow-chart'
 export * from './components/asset-allocation-chart'
+export * from './components/dashboard-period-filter'
+export * from './api/dashboard-api'
+export * from './utils/dashboard-period'

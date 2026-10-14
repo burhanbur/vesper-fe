@@ -344,6 +344,7 @@ export function useMoneyManagerImport() {
 
       // Invalidate queries so dashboard and transactions show new data immediately
       await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
         queryClient.invalidateQueries({ queryKey: ['transactions'] }),
         queryClient.invalidateQueries({ queryKey: ['accounts'] }),
         queryClient.invalidateQueries({ queryKey: ['categories'] }),

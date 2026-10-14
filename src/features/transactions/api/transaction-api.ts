@@ -13,13 +13,20 @@ import type {
 export async function fetchTransactions(
   query?: ListTransactionsQuery,
 ): Promise<TransactionDto[]> {
+  return (await fetchTransactionPage(query)).data
+}
+
+export async function fetchTransactionPage(query?: ListTransactionsQuery) {
   const response = await apiClient.get<ApiResponse<TransactionDto[]>>(
     '/transactions',
     {
-      params: { limit: 50, ...query },
+      params: {
+        ...query,
+        limit: Math.min(100, Math.max(1, query?.limit ?? 50)),
+      },
     },
   )
-  return response.data.data
+  return response.data
 }
 
 export async function createTransaction(

@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { accountKeys } from '@/features/accounts/hooks/use-accounts'
+import { dashboardKeys } from '@/features/dashboard'
 import {
   createTransaction,
   createTransfer,
   deleteTransaction,
-  fetchTransactions,
+  fetchTransactionPage,
   updateTransaction,
 } from '../api/transaction-api'
 import type {
@@ -21,10 +22,15 @@ export const transactionKeys = {
 }
 
 export function useTransactions(query?: ListTransactionsQuery) {
-  return useQuery({
+  const result = useQuery({
     queryKey: transactionKeys.list(query),
-    queryFn: () => fetchTransactions(query),
+    queryFn: () => fetchTransactionPage(query),
   })
+  return {
+    ...result,
+    data: result.data?.data,
+    pagination: result.data?.pagination,
+  }
 }
 
 export function useCreateTransaction() {
@@ -32,6 +38,7 @@ export function useCreateTransaction() {
   return useMutation({
     mutationFn: (input: CreateTransactionInput) => createTransaction(input),
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
       void queryClient.invalidateQueries({ queryKey: transactionKeys.all })
       void queryClient.invalidateQueries({ queryKey: accountKeys.all })
     },
@@ -49,6 +56,7 @@ export function useUpdateTransaction() {
       input: UpdateTransactionInput
     }) => updateTransaction(id, input),
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
       void queryClient.invalidateQueries({ queryKey: transactionKeys.all })
       void queryClient.invalidateQueries({ queryKey: accountKeys.all })
     },
@@ -61,6 +69,7 @@ export function useDeleteTransaction() {
     mutationFn: ({ id, version }: { id: string; version: string }) =>
       deleteTransaction(id, version),
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
       void queryClient.invalidateQueries({ queryKey: transactionKeys.all })
       void queryClient.invalidateQueries({ queryKey: accountKeys.all })
     },
@@ -72,6 +81,7 @@ export function useCreateTransfer() {
   return useMutation({
     mutationFn: (input: CreateTransferInput) => createTransfer(input),
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
       void queryClient.invalidateQueries({ queryKey: transactionKeys.all })
       void queryClient.invalidateQueries({ queryKey: accountKeys.all })
     },
