@@ -11,6 +11,10 @@ import {
   Wallet,
 } from 'lucide-react'
 import { useState } from 'react'
+import {
+  includedDashboardAccounts,
+  visibleDashboardAccounts,
+} from '@/features/dashboard/utils/dashboard-accounts'
 import { AppShell } from '@/components/layout/app-shell'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -61,10 +65,12 @@ export function DashboardPage() {
   const { data: budgets = [] } = useBudgets()
   const { data: instruments = [] } = useInstruments()
 
-  // Calculations
-  const totalNetWorth = accounts
-    .filter((acc) => acc.is_include_total && !acc.deleted_at)
-    .reduce((sum, acc) => sum + parseFloat(acc.balance || '0'), 0)
+  const dashboardAccounts = visibleDashboardAccounts(accounts)
+  const includedAccounts = includedDashboardAccounts(accounts)
+  const totalNetWorth = includedAccounts.reduce(
+    (sum, acc) => sum + Number.parseFloat(acc.balance || '0'),
+    0,
+  )
 
   const incomeTotal = Number(summary.data?.income_total ?? 0)
   const expenseTotal = Number(summary.data?.expense_total ?? 0)
@@ -177,7 +183,8 @@ export function DashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-xs text-slate-400">
-                Terdiri dari {accounts.length} rekening & akun aktif.
+                Terdiri dari {includedAccounts.length} rekening & akun yang
+                disertakan dalam total.
               </p>
             </CardContent>
           </Card>
@@ -244,7 +251,7 @@ export function DashboardPage() {
           ) : (
             <CashflowChart income={incomeTotal} expense={expenseTotal} />
           )}
-          <AssetAllocationChart accounts={accounts} />
+          <AssetAllocationChart accounts={includedAccounts} />
         </div>
 
         {/* Account Cards & Wallets Breakdown */}
@@ -265,12 +272,12 @@ export function DashboardPage() {
               onClick={() => void navigate({ to: '/accounts' })}
               className="text-xs text-indigo-400 hover:text-indigo-300"
             >
-              Lihat Semua ({accounts.length}) →
+              Lihat Semua ({dashboardAccounts.length}) →
             </Button>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {accounts.slice(0, 4).map((acc) => (
+            {dashboardAccounts.slice(0, 4).map((acc) => (
               <Card
                 key={acc.id}
                 className="cursor-pointer transition-colors hover:border-indigo-500/40"

@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { AccountFormDialog } from '@/features/accounts/components/account-form-dialog'
+import { AccountTotalToggle } from '@/features/accounts/components/account-total-toggle'
 import {
   useAccounts,
   useAccountTypes,
@@ -207,7 +208,8 @@ export function AccountsPage() {
                         ) : null}
                       </div>
 
-                      <div className="flex items-center gap-1">
+                      <div className="flex flex-wrap items-center gap-1">
+                        <AccountTotalToggle account={parent} />
                         <Button
                           variant="ghost"
                           size="icon"
@@ -269,7 +271,8 @@ export function AccountsPage() {
                             </div>
                           </div>
 
-                          <div className="flex shrink-0 items-center gap-3">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <AccountTotalToggle account={child} />
                             <span className="font-mono text-sm font-semibold text-slate-100">
                               {formatRupiah(child.balance)}
                             </span>

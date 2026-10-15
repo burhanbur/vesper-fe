@@ -43,7 +43,7 @@ describe('dashboard period filter', () => {
             />,
         )
         await user.click(screen.getByLabelText('Tahun sampai'))
-        await user.click(screen.getByRole('button', { name: '2025', exact: true }))
+        await user.click(screen.getByRole('button', { name: '2025' }))
         expect(screen.getByLabelText('Tahun sampai')).toHaveAttribute(
             'aria-invalid',
             'true',
@@ -56,7 +56,7 @@ describe('dashboard period filter', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Terapkan' }))
         expect(onChange).not.toHaveBeenCalled()
         await user.click(screen.getByLabelText('Tahun dari'))
-        await user.click(screen.getByRole('button', { name: '2024', exact: true }))
+        await user.click(screen.getByRole('button', { name: '2024' }))
         expect(screen.queryByRole('alert')).not.toBeInTheDocument()
         expect(onChange).not.toHaveBeenCalled()
         fireEvent.click(screen.getByRole('button', { name: 'Terapkan' }))
@@ -80,7 +80,7 @@ describe('dashboard period filter', () => {
         )
         await user.click(screen.getByLabelText('Bulan sampai'))
         await user.click(
-            screen.getByRole('button', { name: 'Desember', exact: true }),
+            screen.getByRole('button', { name: 'Desember' }),
         )
         expect(onChange).not.toHaveBeenCalled()
         fireEvent.click(screen.getByRole('button', { name: 'Terapkan' }))
