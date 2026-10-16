@@ -46,7 +46,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
       {/* Content Container */}
       <div
         ref={dialogRef}
-        className="animate-in zoom-in-95 relative z-50 w-full max-w-lg rounded-2xl border border-slate-700/60 bg-slate-900 p-6 text-slate-100 shadow-2xl transition-all duration-150"
+        className="animate-in zoom-in-95 relative z-50 w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl transition-all duration-150 dark:border-slate-700/60 dark:bg-slate-900 dark:text-slate-100"
       >
         {children}
       </div>
@@ -67,7 +67,7 @@ export function DialogHeader({
   return (
     <div
       className={cn(
-        'flex items-start justify-between gap-4 border-b border-slate-800 pb-4',
+        'flex items-start justify-between gap-4 border-b border-slate-200 pb-4 dark:border-slate-800',
         className,
       )}
       {...props}
@@ -77,7 +77,7 @@ export function DialogHeader({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
+          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           aria-label="Close dialog"
         >
           <X className="size-4" />
@@ -95,7 +95,7 @@ export function DialogTitle({
   return (
     <h2
       className={cn(
-        'text-lg font-semibold tracking-tight text-white',
+        'text-lg font-semibold tracking-tight text-slate-900 dark:text-white',
         className,
       )}
       {...props}
@@ -109,7 +109,12 @@ export function DialogDescription({
   className,
   ...props
 }: HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn('text-sm text-slate-400', className)} {...props} />
+  return (
+    <p
+      className={cn('text-sm text-slate-500 dark:text-slate-400', className)}
+      {...props}
+    />
+  )
 }
 
 export function DialogFooter({
@@ -119,7 +124,7 @@ export function DialogFooter({
   return (
     <div
       className={cn(
-        'flex flex-col-reverse gap-2 border-t border-slate-800 pt-4 sm:flex-row sm:justify-end',
+        'flex flex-col-reverse gap-2 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end dark:border-slate-800',
         className,
       )}
       {...props}

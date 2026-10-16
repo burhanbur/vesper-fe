@@ -36,20 +36,20 @@ function PeriodRangeForm({ search, onChange }: DashboardPeriodFilterProps) {
 
     return (
         <section
-            className="rounded-xl border border-slate-800 bg-slate-900/60 p-4"
+            className="rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-sm backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/60 dark:shadow-none"
             aria-label="Filter periode dashboard"
         >
             <div className="mb-3 flex items-center justify-between gap-3">
-                <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-100">
+                <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
                     <SlidersHorizontal
-                        className="size-4 text-indigo-400"
+                        className="size-4 text-indigo-600 dark:text-indigo-400"
                         aria-hidden="true"
                     />
                     Filter arus kas
                 </h2>
                 <span
                     title="Waktu Indonesia Barat"
-                    className="inline-flex items-center gap-1 rounded-full border border-slate-700 px-2 py-1 text-xs text-slate-400"
+                    className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-1 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400"
                 >
                     <Clock3 className="size-3" aria-hidden="true" /> WIB
                 </span>
@@ -63,10 +63,10 @@ function PeriodRangeForm({ search, onChange }: DashboardPeriodFilterProps) {
                 className="flex flex-wrap items-end gap-3"
             >
                 <fieldset className="min-w-0">
-                    <legend className="mb-1.5 text-xs font-medium text-slate-400">
+                    <legend className="mb-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
                         Periode arus kas
                     </legend>
-                    <div className="inline-flex gap-1 rounded-lg border border-slate-700 bg-slate-950/50 p-1">
+                    <div className="inline-flex gap-1 rounded-lg border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-950/50">
                         {dashboardPeriodSchema.options.map((period) => (
                             <Button
                                 key={period}
@@ -97,7 +97,7 @@ function PeriodRangeForm({ search, onChange }: DashboardPeriodFilterProps) {
                         <div key={field} className="min-w-0 flex-1 basis-36 sm:max-w-48">
                             <label
                                 htmlFor={`dashboard-${field}`}
-                                className="mb-1.5 block text-xs font-medium text-slate-400"
+                                className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400"
                             >
                                 {label} {field === 'value' ? 'dari' : 'sampai'}
                             </label>
@@ -123,7 +123,7 @@ function PeriodRangeForm({ search, onChange }: DashboardPeriodFilterProps) {
                                 key={String(issue.path[0])}
                                 id={`dashboard-${String(issue.path[0])}-error`}
                                 role="alert"
-                                className="text-xs text-rose-400"
+                                className="text-xs text-rose-600 dark:text-rose-400"
                             >
                                 {issue.message}
                             </p>

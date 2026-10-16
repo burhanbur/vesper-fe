@@ -13,8 +13,9 @@ const buttonVariants = cva(
         emerald:
           'bg-emerald-600 text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-500 hover:shadow-emerald-600/35',
         outline:
-          'border border-slate-700 bg-slate-900/60 text-slate-200 hover:bg-slate-800 hover:text-white hover:border-slate-600',
-        ghost: 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-100',
+          'border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white dark:hover:border-slate-600',
+        ghost:
+          'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-slate-100',
         destructive:
           'bg-rose-600 text-white shadow-lg shadow-rose-600/25 hover:bg-rose-500',
       },

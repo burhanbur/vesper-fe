@@ -75,13 +75,13 @@ export function ApiKeyCreateDialog({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="animate-in fade-in zoom-in-95 w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl backdrop-blur-xl">
+        <div className="animate-in fade-in zoom-in-95 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-slate-100">
-              <KeyRound className="size-5 text-indigo-400" />
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-slate-100">
+              <KeyRound className="size-5 text-indigo-500 dark:text-indigo-400" />
               {generatedKey ? 'API Key Baru Dibuat' : 'Buat API Key Baru'}
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-400">
+            <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
               {generatedKey
                 ? 'Salin dan simpan kunci rahasia ini di tempat yang aman. Kunci ini hanya ditampilkan sekali.'
                 : 'Buat token API untuk integrasi bot, script otomasi, atau aplikasi pihak ketiga.'}
@@ -91,8 +91,8 @@ export function ApiKeyCreateDialog({
           {generatedKey ? (
             <div className="mt-5 space-y-4">
               <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5">
-                <ShieldAlert className="mt-0.5 size-5 shrink-0 text-amber-400" />
-                <p className="text-xs leading-relaxed text-amber-200/90">
+                <ShieldAlert className="mt-0.5 size-5 shrink-0 text-amber-500 dark:text-amber-400" />
+                <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-200/90">
                   Demi alasan keamanan, kunci API ini tidak akan pernah
                   ditampilkan kembali. Segera simpan sebelum menutup jendela
                   ini!
@@ -102,7 +102,7 @@ export function ApiKeyCreateDialog({
               <div className="space-y-1.5">
                 <label
                   htmlFor="generated-api-key-val"
-                  className="text-xs font-medium text-slate-300"
+                  className="text-xs font-medium text-slate-700 dark:text-slate-300"
                 >
                   Token Rahasia API
                 </label>
@@ -111,16 +111,16 @@ export function ApiKeyCreateDialog({
                     id="generated-api-key-val"
                     readOnly
                     value={generatedKey}
-                    className="border-slate-700 bg-slate-950 font-mono text-xs text-emerald-400 select-all selection:bg-emerald-500/30"
+                    className="font-mono text-xs text-emerald-600 select-all selection:bg-emerald-500/30 dark:text-emerald-400"
                   />
                   <Button
                     type="button"
                     variant="outline"
-                    className="shrink-0 border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                    className="shrink-0"
                     onClick={() => void handleCopyKey()}
                   >
                     {copied ? (
-                      <Check className="size-4 text-emerald-400" />
+                      <Check className="size-4 text-emerald-500 dark:text-emerald-400" />
                     ) : (
                       <Copy className="size-4" />
                     )}
@@ -145,9 +145,9 @@ export function ApiKeyCreateDialog({
               <div className="space-y-1.5">
                 <label
                   htmlFor="api-key-name"
-                  className="text-xs font-medium text-slate-300"
+                  className="text-xs font-medium text-slate-700 dark:text-slate-300"
                 >
-                  Nama Kunci <span className="text-rose-400">*</span>
+                  Nama Kunci <span className="text-rose-500">*</span>
                 </label>
                 <Input
                   id="api-key-name"
@@ -155,14 +155,14 @@ export function ApiKeyCreateDialog({
                   placeholder="Contoh: Zapier Sync, Mobile App Service"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="border-slate-800 bg-slate-950 text-sm"
+                  className="text-sm"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label
                   htmlFor="api-key-application"
-                  className="text-xs font-medium text-slate-300"
+                  className="text-xs font-medium text-slate-700 dark:text-slate-300"
                 >
                   Nama Aplikasi / Klien (Opsional)
                 </label>
@@ -171,14 +171,14 @@ export function ApiKeyCreateDialog({
                   placeholder="Contoh: Python Analytics, Telegram Bot"
                   value={application}
                   onChange={(e) => setApplication(e.target.value)}
-                  className="border-slate-800 bg-slate-950 text-sm"
+                  className="text-sm"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label
                   htmlFor="api-key-desc"
-                  className="text-xs font-medium text-slate-300"
+                  className="text-xs font-medium text-slate-700 dark:text-slate-300"
                 >
                   Keterangan (Opsional)
                 </label>
@@ -187,14 +187,14 @@ export function ApiKeyCreateDialog({
                   placeholder="Keterangan kegunaan API Key..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="border-slate-800 bg-slate-950 text-sm"
+                  className="text-sm"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label
                   htmlFor="api-key-rate-limit"
-                  className="text-xs font-medium text-slate-300"
+                  className="text-xs font-medium text-slate-700 dark:text-slate-300"
                 >
                   Batas Panggilan (Rate Limit per Menit)
                 </label>
@@ -205,7 +205,7 @@ export function ApiKeyCreateDialog({
                   max="10000"
                   value={rateLimit}
                   onChange={(e) => setRateLimit(e.target.value)}
-                  className="border-slate-800 bg-slate-950 text-sm"
+                  className="text-sm"
                 />
               </div>
 
@@ -213,7 +213,6 @@ export function ApiKeyCreateDialog({
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-slate-800 text-slate-300 hover:bg-slate-800"
                   onClick={() => handleClose(false)}
                 >
                   Batal

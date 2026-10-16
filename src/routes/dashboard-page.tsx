@@ -93,11 +93,11 @@ export function DashboardPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
+              <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
                 Selamat datang, {user?.name?.split(' ')[0] ?? 'User'} 👋
               </h1>
             </div>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               Berikut adalah ringkasan aset, arus kas, dan grafik portofolio
               Anda.
             </p>
@@ -126,9 +126,9 @@ export function DashboardPage() {
               variant="outline"
               size="sm"
               onClick={() => setTransferModalOpen(true)}
-              className="gap-1.5 border-slate-700 hover:bg-slate-800"
+              className="gap-1.5"
             >
-              <ArrowRightLeft className="size-4 text-indigo-400" />
+              <ArrowRightLeft className="size-4 text-indigo-600 dark:text-indigo-400" />
               Transfer
             </Button>
           </div>
@@ -140,7 +140,7 @@ export function DashboardPage() {
             void navigate({ to: '/dashboard', search: nextSearch })
           }
         />
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           Arus kas: {dashboardPeriodLabel(search)} (WIB). Kekayaan bersih, saldo
           rekening, dan alokasi aset menunjukkan kondisi saat ini, bukan periode
           terpilih.
@@ -148,7 +148,7 @@ export function DashboardPage() {
         {summary.isError && (
           <div
             role="alert"
-            className="flex items-center gap-3 text-sm text-rose-400"
+            className="flex items-center gap-3 text-sm text-rose-600 dark:text-rose-400"
           >
             Ringkasan arus kas gagal dimuat.
             <Button
@@ -161,7 +161,10 @@ export function DashboardPage() {
           </div>
         )}
         {summary.isFetching && !summary.isPending && (
-          <p role="status" className="text-sm text-slate-400">
+          <p
+            role="status"
+            className="text-sm text-slate-500 dark:text-slate-400"
+          >
             Memperbarui arus kas…
           </p>
         )}
@@ -169,20 +172,20 @@ export function DashboardPage() {
         {/* Net Worth & Cashflow Highlight Cards */}
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
           {/* Total Net Worth */}
-          <Card className="relative overflow-hidden border-indigo-500/30 bg-gradient-to-br from-indigo-950/40 via-slate-900 to-slate-900/90 shadow-indigo-950/30">
-            <div className="absolute top-0 right-0 p-5 opacity-10">
-              <Landmark className="size-24 text-indigo-400" />
+          <Card className="relative overflow-hidden border-indigo-200/80 bg-gradient-to-br from-indigo-50/90 via-white to-indigo-100/40 shadow-sm dark:border-indigo-500/30 dark:bg-gradient-to-br dark:from-indigo-950/40 dark:via-slate-900 dark:to-slate-900/90 dark:shadow-indigo-950/30">
+            <div className="absolute top-0 right-0 p-5 opacity-5 dark:opacity-10">
+              <Landmark className="size-24 text-indigo-600 dark:text-indigo-400" />
             </div>
             <CardHeader className="pb-2">
-              <span className="text-xs font-semibold tracking-wider text-indigo-400 uppercase">
+              <span className="text-xs font-semibold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
                 Total Kekayaan Bersih (Net Worth)
               </span>
-              <CardTitle className="pt-1 text-3xl font-black tracking-tight text-white sm:text-4xl">
+              <CardTitle className="pt-1 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl dark:text-white">
                 {accountsLoading ? 'Memuat…' : formatRupiah(totalNetWorth)}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Terdiri dari {includedAccounts.length} rekening & akun yang
                 disertakan dalam total.
               </p>
@@ -190,47 +193,49 @@ export function DashboardPage() {
           </Card>
 
           {/* Total Pemasukan */}
-          <Card className="relative overflow-hidden border-emerald-500/20 bg-slate-900/80">
+          <Card className="relative overflow-hidden border-emerald-200/80 bg-gradient-to-br from-emerald-50/70 via-white to-white shadow-sm dark:border-emerald-500/20 dark:bg-slate-900/80 dark:shadow-none">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                <span className="text-xs font-semibold tracking-wider text-emerald-600 uppercase dark:text-emerald-400">
                   Total Pemasukan (Periode Terpilih)
                 </span>
-                <span className="grid size-7 place-items-center rounded-lg bg-emerald-500/15 text-emerald-400">
+                <span className="grid size-7 place-items-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400">
                   <ArrowDownRight className="size-4" />
                 </span>
               </div>
-              <CardTitle className="pt-1 text-2xl font-extrabold tracking-tight text-emerald-400 sm:text-3xl">
+              <CardTitle className="pt-1 text-2xl font-extrabold tracking-tight text-emerald-600 sm:text-3xl dark:text-emerald-400">
                 {cashflowStatus ?? formatRupiah(incomeTotal)}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Transaksi dana masuk yang berhasil dicatat.
               </p>
             </CardContent>
           </Card>
 
           {/* Total Pengeluaran */}
-          <Card className="relative overflow-hidden border-rose-500/20 bg-slate-900/80">
+          <Card className="relative overflow-hidden border-rose-200/80 bg-gradient-to-br from-rose-50/70 via-white to-white shadow-sm dark:border-rose-500/20 dark:bg-slate-900/80 dark:shadow-none">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold tracking-wider text-rose-400 uppercase">
+                <span className="text-xs font-semibold tracking-wider text-rose-600 uppercase dark:text-rose-400">
                   Total Pengeluaran (Periode Terpilih)
                 </span>
-                <span className="grid size-7 place-items-center rounded-lg bg-rose-500/15 text-rose-400">
+                <span className="grid size-7 place-items-center rounded-lg bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400">
                   <ArrowUpRight className="size-4" />
                 </span>
               </div>
-              <CardTitle className="pt-1 text-2xl font-extrabold tracking-tight text-rose-400 sm:text-3xl">
+              <CardTitle className="pt-1 text-2xl font-extrabold tracking-tight text-rose-600 sm:text-3xl dark:text-rose-400">
                 {cashflowStatus ?? formatRupiah(expenseTotal)}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between text-xs text-slate-400">
+              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                 <span>Net Savings:</span>
                 <span
-                  className={`font-semibold ${netCashflow >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                  className={`font-semibold ${netCashflow >= 0
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-rose-600 dark:text-rose-400'
                     }`}
                 >
                   {cashflowStatus ?? formatRupiah(netCashflow)}
@@ -258,11 +263,11 @@ export function DashboardPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="flex items-center gap-2 text-lg font-bold text-white">
-                <Wallet className="size-5 text-indigo-400" />
+              <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
+                <Wallet className="size-5 text-indigo-600 dark:text-indigo-400" />
                 Rekening & Dompet Digital
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Saldo pada akun bank dan dompet yang Anda miliki.
               </p>
             </div>
@@ -270,7 +275,7 @@ export function DashboardPage() {
               variant="ghost"
               size="sm"
               onClick={() => void navigate({ to: '/accounts' })}
-              className="text-xs text-indigo-400 hover:text-indigo-300"
+              className="text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
             >
               Lihat Semua ({dashboardAccounts.length}) →
             </Button>
@@ -300,12 +305,12 @@ export function DashboardPage() {
                       {acc.currency}
                     </Badge>
                   </div>
-                  <h3 className="mt-2 truncate text-sm font-semibold text-slate-200">
+                  <h3 className="mt-2 truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
                     {acc.name}
                   </h3>
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
-                  <p className="text-lg font-bold tracking-tight text-white">
+                  <p className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
                     {formatRupiah(acc.balance)}
                   </p>
                 </CardContent>
@@ -320,11 +325,11 @@ export function DashboardPage() {
           <div className="space-y-4 lg:col-span-2">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="flex items-center gap-2 text-lg font-bold text-white">
-                  <ReceiptText className="size-5 text-indigo-400" />
+                <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
+                  <ReceiptText className="size-5 text-indigo-600 dark:text-indigo-400" />
                   Transaksi Terbaru
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Catatan mutasi dana dan riwayat aktivitas terbaru.
                 </p>
               </div>
@@ -332,19 +337,22 @@ export function DashboardPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => void navigate({ to: '/transactions' })}
-                className="text-xs text-indigo-400 hover:text-indigo-300"
+                className="text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
               >
                 Semua Transaksi →
               </Button>
             </div>
 
-            <Card className="divide-y divide-slate-800/80">
+            <Card className="divide-y divide-slate-200/80 dark:divide-slate-800/80">
               {txsLoading ? (
-                <div className="p-8 text-center text-sm text-slate-400">
+                <div className="p-8 text-center text-sm text-slate-500 dark:text-slate-400">
                   Memuat daftar transaksi…
                 </div>
               ) : txsError ? (
-                <div role="alert" className="p-8 text-sm text-rose-400">
+                <div
+                  role="alert"
+                  className="p-8 text-sm text-rose-600 dark:text-rose-400"
+                >
                   Transaksi gagal dimuat.{' '}
                   <Button
                     variant="outline"
@@ -356,11 +364,11 @@ export function DashboardPage() {
                 </div>
               ) : transactions.length === 0 ? (
                 <div className="p-10 text-center">
-                  <ReceiptText className="mx-auto mb-2 size-10 text-slate-600" />
-                  <p className="text-sm font-semibold text-slate-300">
+                  <ReceiptText className="mx-auto mb-2 size-10 text-slate-400 dark:text-slate-600" />
+                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-300">
                     Belum ada transaksi
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     Mulai catat transaksi pertama Anda dengan menekan tombol
                     Catat Transaksi.
                   </p>
@@ -379,15 +387,15 @@ export function DashboardPage() {
                   return (
                     <div
                       key={tx.id}
-                      className="flex items-center justify-between p-4 transition-colors hover:bg-slate-800/40"
+                      className="flex items-center justify-between p-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40"
                     >
                       <div className="flex min-w-0 items-center gap-3">
                         <span
                           className={`grid size-9 place-items-center rounded-xl text-sm ${isIncome
-                              ? 'bg-emerald-500/15 text-emerald-400'
+                              ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400'
                               : isTransfer
-                                ? 'bg-sky-500/15 text-sky-400'
-                                : 'bg-rose-500/15 text-rose-400'
+                                ? 'bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400'
+                                : 'bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400'
                             }`}
                         >
                           {isIncome ? (
@@ -399,7 +407,7 @@ export function DashboardPage() {
                           )}
                         </span>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-slate-200">
+                          <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">
                             {tx.description ||
                               (isIncome
                                 ? 'Pemasukan'
@@ -407,7 +415,7 @@ export function DashboardPage() {
                                   ? 'Transfer Antar Akun'
                                   : 'Pengeluaran')}
                           </p>
-                          <p className="text-[11px] text-slate-400">
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400">
                             {formatDate(tx.transacted_at)}
                           </p>
                         </div>
@@ -416,10 +424,10 @@ export function DashboardPage() {
                       <div className="shrink-0 text-right">
                         <span
                           className={`font-mono text-sm font-bold tracking-tight ${isIncome
-                              ? 'text-emerald-400'
+                              ? 'text-emerald-600 dark:text-emerald-400'
                               : isTransfer
-                                ? 'text-sky-400'
-                                : 'text-rose-400'
+                                ? 'text-sky-600 dark:text-sky-400'
+                                : 'text-rose-600 dark:text-rose-400'
                             }`}
                         >
                           {isIncome ? '+' : isTransfer ? '' : '-'}
@@ -437,11 +445,11 @@ export function DashboardPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="flex items-center gap-2 text-lg font-bold text-white">
-                  <Target className="size-5 text-indigo-400" />
+                <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
+                  <Target className="size-5 text-indigo-600 dark:text-indigo-400" />
                   Anggaran (Budgets)
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Target pengeluaran Anda.
                 </p>
               </div>
@@ -449,7 +457,7 @@ export function DashboardPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => void navigate({ to: '/budgets' })}
-                className="text-xs text-indigo-400 hover:text-indigo-300"
+                className="text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
               >
                 Kelola →
               </Button>
@@ -458,8 +466,8 @@ export function DashboardPage() {
             <Card className="space-y-4 p-4">
               {budgets.length === 0 ? (
                 <div className="py-6 text-center">
-                  <Target className="mx-auto mb-2 size-8 text-slate-600" />
-                  <p className="text-xs text-slate-400">
+                  <Target className="mx-auto mb-2 size-8 text-slate-400 dark:text-slate-600" />
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Belum ada alokasi anggaran aktif.
                   </p>
                   <Button
@@ -475,10 +483,10 @@ export function DashboardPage() {
                 budgets.slice(0, 3).map((bg) => (
                   <div key={bg.id} className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-200">
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">
                         {bg.description || bg.period_type}
                       </span>
-                      <span className="text-slate-400">
+                      <span className="text-slate-500 dark:text-slate-400">
                         {formatRupiah(bg.current_amount)}
                       </span>
                     </div>
@@ -489,9 +497,9 @@ export function DashboardPage() {
             </Card>
 
             {/* Investment Snapshot Quick Card */}
-            <Card className="space-y-3 border-emerald-500/20 bg-emerald-950/20 p-4">
+            <Card className="space-y-3 border-emerald-200 bg-emerald-50/70 p-4 shadow-sm dark:border-emerald-500/20 dark:bg-emerald-950/20 dark:shadow-none">
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+                <span className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-emerald-700 uppercase dark:text-emerald-400">
                   <TrendingUp className="size-4" />
                   Investasi Terdaftar
                 </span>
@@ -499,14 +507,14 @@ export function DashboardPage() {
                   {instruments.length} Instrumen
                 </Badge>
               </div>
-              <p className="text-xs text-slate-300">
+              <p className="text-xs text-slate-600 dark:text-slate-300">
                 Pantau portfolio saham, reksadana, dan emas dengan kalkulasi
                 floating profit/loss.
               </p>
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full border-emerald-500/30 text-xs text-emerald-300 hover:bg-emerald-500/10"
+                className="w-full border-emerald-300 text-xs text-emerald-700 hover:bg-emerald-100/70 dark:border-emerald-500/30 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
                 onClick={() => void navigate({ to: '/investments' })}
               >
                 Buka Portofolio Investasi →

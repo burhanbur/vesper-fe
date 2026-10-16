@@ -23,7 +23,7 @@ export function Progress({
       aria-valuemax={max}
       aria-valuenow={value}
       className={cn(
-        'relative h-2 w-full overflow-hidden rounded-full bg-slate-800',
+        'relative h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800',
         className,
       )}
       {...props}

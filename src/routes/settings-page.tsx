@@ -1,10 +1,13 @@
 import { useNavigate } from '@tanstack/react-router'
 import {
   KeyRound,
+  Monitor,
+  Moon,
   Plus,
   Power,
   Settings,
   Smartphone,
+  Sun,
   Tags,
   Trash2,
   User,
@@ -46,10 +49,13 @@ import {
 } from '@/features/categories'
 import type { CategoryType } from '@/features/categories/types/category'
 import { useDevices, useProfile, useUpdateProfile } from '@/features/profile'
+import { useTheme } from '@/hooks/use-theme'
 import { formatDateTime } from '@/lib/formatters'
+import { cn } from '@/lib/utils'
 
 export function SettingsPage() {
   const navigate = useNavigate()
+  const { theme, setTheme } = useTheme()
   const [activeTab, setActiveTab] = useState('profile')
 
   // Profile state
@@ -92,7 +98,7 @@ export function SettingsPage() {
         full_name: fullName || profile?.full_name || null,
         phone_number: phoneNumber || profile?.phone_number || null,
         gender: (gender || profile?.gender) as 'Laki-laki' | 'Perempuan' | null,
-        theme: (profile?.theme as 'dark' | 'light' | 'system') || 'dark',
+        theme: theme || 'system',
         base_currency: 'IDR',
       })
       toast.success('Profil berhasil diperbarui!')
@@ -182,13 +188,13 @@ export function SettingsPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="flex items-center gap-2.5 text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
-            <Settings className="size-7 text-indigo-400" />
+          <h1 className="flex items-center gap-2.5 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+            <Settings className="size-7 text-indigo-500 dark:text-indigo-400" />
             Pengaturan & Preferensi
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
-            Kelola data profil, master kategori keuangan, tipe akun, perangkat,
-            dan API Keys Anda.
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Kelola data profil, tema tampilan, master kategori keuangan, tipe
+            akun, perangkat, dan API Keys Anda.
           </p>
         </div>
 
@@ -217,20 +223,124 @@ export function SettingsPage() {
           {/* Tab 1: Profile */}
           <TabsContent value="profile">
             <Card className="max-w-2xl p-6">
-              <CardHeader className="border-b border-slate-800 p-0 pb-5">
-                <CardTitle className="text-lg">Profil Pengguna</CardTitle>
+              <CardHeader className="border-b border-slate-200 p-0 pb-5 dark:border-slate-800">
+                <CardTitle className="text-lg">Profil & Tampilan</CardTitle>
                 <CardDescription>
-                  Informasi akun dan preferensi mata uang dasar.
+                  Informasi akun, tema antarmuka (terang/gelap), dan preferensi
+                  mata uang dasar.
                 </CardDescription>
               </CardHeader>
 
               <form
                 onSubmit={(e) => void handleSaveProfile(e)}
-                className="space-y-4 pt-5"
+                className="space-y-5 pt-5"
               >
+                {/* Theme Selector */}
+                <div className="space-y-2">
+                  <span className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Tema Tampilan (Theme)
+                  </span>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Pilih tampilan yang paling nyaman untuk Anda.
+                  </p>
+                  <div className="grid grid-cols-3 gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setTheme('light')}
+                      className={cn(
+                        'flex cursor-pointer flex-col items-center gap-2 rounded-xl border p-3.5 text-center transition-all',
+                        theme === 'light'
+                          ? 'border-indigo-600 bg-indigo-50 text-indigo-950 ring-2 ring-indigo-500/20 dark:bg-indigo-950/40 dark:text-indigo-200'
+                          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800/60',
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'grid size-9 place-items-center rounded-lg',
+                          theme === 'light'
+                            ? 'bg-amber-500 text-white shadow-xs'
+                            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+                        )}
+                      >
+                        <Sun className="size-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                          Terang
+                        </p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                          Light Mode
+                        </p>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setTheme('dark')}
+                      className={cn(
+                        'flex cursor-pointer flex-col items-center gap-2 rounded-xl border p-3.5 text-center transition-all',
+                        theme === 'dark'
+                          ? 'border-indigo-600 bg-indigo-50 text-indigo-950 ring-2 ring-indigo-500/20 dark:bg-indigo-950/40 dark:text-indigo-200'
+                          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800/60',
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'grid size-9 place-items-center rounded-lg',
+                          theme === 'dark'
+                            ? 'bg-indigo-600 text-white shadow-xs'
+                            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+                        )}
+                      >
+                        <Moon className="size-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                          Gelap
+                        </p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                          Dark Mode
+                        </p>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setTheme('system')}
+                      className={cn(
+                        'flex cursor-pointer flex-col items-center gap-2 rounded-xl border p-3.5 text-center transition-all',
+                        theme === 'system'
+                          ? 'border-indigo-600 bg-indigo-50 text-indigo-950 ring-2 ring-indigo-500/20 dark:bg-indigo-950/40 dark:text-indigo-200'
+                          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800/60',
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'grid size-9 place-items-center rounded-lg',
+                          theme === 'system'
+                            ? 'bg-emerald-600 text-white shadow-xs'
+                            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+                        )}
+                      >
+                        <Monitor className="size-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                          Sistem
+                        </p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                          Otomatis OS
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="h-px bg-slate-200 dark:bg-slate-800" />
+
                 <div className="space-y-1.5">
                   <label
-                    className="text-xs font-medium text-slate-300"
+                    className="text-xs font-medium text-slate-700 dark:text-slate-300"
                     htmlFor="prof-fullname"
                   >
                     Nama Lengkap
@@ -245,7 +355,7 @@ export function SettingsPage() {
 
                 <div className="space-y-1.5">
                   <label
-                    className="text-xs font-medium text-slate-300"
+                    className="text-xs font-medium text-slate-700 dark:text-slate-300"
                     htmlFor="prof-phone"
                   >
                     Nomor Telepon
@@ -261,7 +371,7 @@ export function SettingsPage() {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <label
-                      className="text-xs font-medium text-slate-300"
+                      className="text-xs font-medium text-slate-700 dark:text-slate-300"
                       htmlFor="prof-gender"
                     >
                       Jenis Kelamin
@@ -283,7 +393,7 @@ export function SettingsPage() {
 
                   <div className="space-y-1.5">
                     <label
-                      className="text-xs font-medium text-slate-300"
+                      className="text-xs font-medium text-slate-700 dark:text-slate-300"
                       htmlFor="prof-curr"
                     >
                       Mata Uang Utama
@@ -292,7 +402,7 @@ export function SettingsPage() {
                       id="prof-curr"
                       disabled
                       value="IDR (Rupiah Indonesia)"
-                      className="bg-slate-800/50"
+                      className="bg-slate-100 text-slate-700 dark:bg-slate-800/50 dark:text-slate-300"
                     />
                   </div>
                 </div>
@@ -311,12 +421,12 @@ export function SettingsPage() {
           {/* Tab 2: Categories */}
           <TabsContent value="categories">
             <Card className="space-y-4 p-6">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-4 dark:border-slate-800">
                 <div>
-                  <h3 className="text-base font-bold text-white">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
                     Kategori Transaksi
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Klasifikasi pos pemasukan dan pengeluaran Anda.
                   </p>
                 </div>
@@ -342,12 +452,12 @@ export function SettingsPage() {
           {/* Tab 3: Account Types */}
           <TabsContent value="account-types">
             <Card className="space-y-4 p-6">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-4 dark:border-slate-800">
                 <div>
-                  <h3 className="text-base font-bold text-white">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
                     Tipe Akun Keuangan
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Kategori klasifikasi rekening (CASH vs INVESTMENT).
                   </p>
                 </div>
@@ -365,10 +475,10 @@ export function SettingsPage() {
                 {accountTypes.map((t) => (
                   <div
                     key={t.id}
-                    className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 p-3.5"
+                    className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3.5 dark:border-slate-800 dark:bg-slate-900/60"
                   >
                     <div>
-                      <p className="text-sm font-semibold text-slate-100">
+                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                         {t.name}
                       </p>
                       <Badge
@@ -389,33 +499,33 @@ export function SettingsPage() {
           {/* Tab 4: Devices */}
           <TabsContent value="devices">
             <Card className="space-y-4 p-6">
-              <div className="border-b border-slate-800 pb-4">
-                <h3 className="text-base font-bold text-white">
+              <div className="border-b border-slate-200 pb-4 dark:border-slate-800">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
                   Perangkat Terdaftar
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Daftar perangkat yang terhubung dengan akun Vesper ini.
                 </p>
               </div>
 
               {devices.length === 0 ? (
-                <div className="py-6 text-center text-xs text-slate-400">
+                <div className="py-6 text-center text-xs text-slate-500 dark:text-slate-400">
                   Belum ada perangkat mobile yang terdaftar untuk sinkronisasi.
                 </div>
               ) : (
-                <div className="divide-y divide-slate-800">
+                <div className="divide-y divide-slate-200 dark:divide-slate-800">
                   {devices.map((d) => (
                     <div
                       key={d.id}
                       className="flex items-center justify-between py-3"
                     >
                       <div className="flex items-center gap-3">
-                        <Smartphone className="size-5 text-indigo-400" />
+                        <Smartphone className="size-5 text-indigo-500 dark:text-indigo-400" />
                         <div>
-                          <p className="text-sm font-semibold text-white">
+                          <p className="text-sm font-semibold text-slate-800 dark:text-white">
                             {d.name}
                           </p>
-                          <p className="text-xs text-slate-400">
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
                             Platform: {d.platform} • App v{d.app_version}
                           </p>
                         </div>
@@ -433,13 +543,13 @@ export function SettingsPage() {
           {/* Tab 5: API Keys */}
           <TabsContent value="api-keys">
             <Card className="space-y-4 p-6">
-              <div className="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
                 <div>
-                  <h3 className="flex items-center gap-2 text-base font-bold text-white">
-                    <KeyRound className="size-4 text-indigo-400" />
+                  <h3 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
+                    <KeyRound className="size-4 text-indigo-500 dark:text-indigo-400" />
                     Manajemen API Keys
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Kunci akses aman untuk integrasi bot eksternal, automation,
                     dan layanan machine-to-machine.
                   </p>
@@ -455,13 +565,13 @@ export function SettingsPage() {
               </div>
 
               {apiKeysLoading ? (
-                <div className="py-12 text-center text-xs text-slate-400">
+                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400">
                   Memuat daftar API Keys...
                 </div>
               ) : apiKeys.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-slate-800 py-12 text-center">
-                  <KeyRound className="mx-auto mb-2 size-8 text-slate-600 opacity-60" />
-                  <p className="text-sm font-semibold text-slate-300">
+                <div className="rounded-xl border border-dashed border-slate-300 py-12 text-center dark:border-slate-800">
+                  <KeyRound className="mx-auto mb-2 size-8 text-slate-400 opacity-60 dark:text-slate-600" />
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                     Belum ada API Key aktif
                   </p>
                   <p className="mx-auto mt-1 max-w-sm text-xs text-slate-500">
@@ -478,7 +588,7 @@ export function SettingsPage() {
                   </Button>
                 </div>
               ) : (
-                <div className="divide-y divide-slate-800/80">
+                <div className="divide-y divide-slate-200 dark:divide-slate-800/80">
                   {apiKeys.map((key) => (
                     <div
                       key={key.id}
@@ -486,14 +596,11 @@ export function SettingsPage() {
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2.5">
-                          <span className="text-sm font-semibold text-slate-100">
+                          <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                             {key.name}
                           </span>
                           {key.application ? (
-                            <Badge
-                              variant="outline"
-                              className="border-slate-700 bg-slate-800 text-[10px] text-slate-300"
-                            >
+                            <Badge variant="outline" className="text-[10px]">
                               {key.application}
                             </Badge>
                           ) : null}
@@ -504,8 +611,8 @@ export function SettingsPage() {
                             {key.is_active ? 'Aktif' : 'Nonaktif'}
                           </Badge>
                         </div>
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
-                          <span className="rounded border border-slate-800 bg-slate-950 px-2 py-0.5 font-mono text-slate-300">
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                          <span className="rounded border border-slate-200 bg-slate-100 px-2 py-0.5 font-mono text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
                             {key.key_prefix}
                           </span>
                           <span>Batas: {key.rate_limit} req/menit</span>
@@ -516,13 +623,13 @@ export function SettingsPage() {
                               {formatDateTime(key.last_used_at)}
                             </span>
                           ) : (
-                            <span className="text-slate-500">
+                            <span className="text-slate-400 dark:text-slate-500">
                               Belum pernah dipakai
                             </span>
                           )}
                         </div>
                         {key.description ? (
-                          <p className="pt-0.5 text-xs text-slate-400">
+                          <p className="pt-0.5 text-xs text-slate-500 dark:text-slate-400">
                             {key.description}
                           </p>
                         ) : null}
@@ -535,10 +642,11 @@ export function SettingsPage() {
                           onClick={() =>
                             void handleToggleApiKey(key.id, key.is_active)
                           }
-                          className={`border-slate-800 text-xs ${key.is_active
-                              ? 'text-amber-400 hover:bg-amber-500/10 hover:text-amber-300'
-                              : 'text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300'
-                            }`}
+                          className={`text-xs ${
+                            key.is_active
+                              ? 'text-amber-500 hover:bg-amber-500/10 hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300'
+                              : 'text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300'
+                          }`}
                         >
                           <Power className="mr-1 size-3.5" />
                           {key.is_active ? 'Nonaktifkan' : 'Aktifkan'}
@@ -583,7 +691,7 @@ export function SettingsPage() {
           <div className="space-y-3 py-4">
             <div className="space-y-1.5">
               <label
-                className="text-xs font-medium text-slate-300"
+                className="text-xs font-medium text-slate-700 dark:text-slate-300"
                 htmlFor="cat-name-input"
               >
                 Nama Kategori
@@ -599,7 +707,7 @@ export function SettingsPage() {
 
             <div className="space-y-1.5">
               <label
-                className="text-xs font-medium text-slate-300"
+                className="text-xs font-medium text-slate-700 dark:text-slate-300"
                 htmlFor="cat-type-select"
               >
                 Tipe Kategori
@@ -643,7 +751,7 @@ export function SettingsPage() {
           <div className="space-y-3 py-4">
             <div className="space-y-1.5">
               <label
-                className="text-xs font-medium text-slate-300"
+                className="text-xs font-medium text-slate-700 dark:text-slate-300"
                 htmlFor="type-name-input"
               >
                 Nama Tipe Akun
@@ -659,7 +767,7 @@ export function SettingsPage() {
 
             <div className="space-y-1.5">
               <label
-                className="text-xs font-medium text-slate-300"
+                className="text-xs font-medium text-slate-700 dark:text-slate-300"
                 htmlFor="type-cat-select"
               >
                 Kategori

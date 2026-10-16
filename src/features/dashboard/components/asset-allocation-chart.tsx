@@ -102,14 +102,14 @@ export function AssetAllocationChart({ accounts }: AssetAllocationChartProps) {
   ].filter((b) => b.amount > 0 || totalBalance === 0)
 
   return (
-    <Card className="border-slate-800/80 bg-slate-900/60 backdrop-blur-sm">
+    <Card className="border-slate-200/80 bg-white/90 shadow-sm backdrop-blur-sm dark:border-slate-800/80 dark:bg-slate-900/60 dark:shadow-none">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-sm font-bold text-slate-200">
-            <PieChart className="size-4 text-emerald-400" />
+          <CardTitle className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-slate-200">
+            <PieChart className="size-4 text-emerald-600 dark:text-emerald-400" />
             Alokasi & Distribusi Kekayaan
           </CardTitle>
-          <span className="flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-400">
+          <span className="flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
             <ShieldCheck className="size-3" /> Terdiversifikasi
           </span>
         </div>
@@ -117,7 +117,7 @@ export function AssetAllocationChart({ accounts }: AssetAllocationChartProps) {
       <CardContent className="space-y-4">
         {/* Multi-segment Progress Bar */}
         <div className="space-y-1.5">
-          <div className="flex h-4 w-full overflow-hidden rounded-full border border-slate-800 bg-slate-950 p-0.5">
+          <div className="flex h-4 w-full overflow-hidden rounded-full border border-slate-200 bg-slate-100 p-0.5 dark:border-slate-800 dark:bg-slate-950">
             {buckets.length > 0 ? (
               buckets.map((b) => (
                 <div
@@ -130,7 +130,7 @@ export function AssetAllocationChart({ accounts }: AssetAllocationChartProps) {
                 />
               ))
             ) : (
-              <div className="h-full w-full rounded-full bg-slate-800" />
+              <div className="h-full w-full rounded-full bg-slate-200 dark:bg-slate-800" />
             )}
           </div>
         </div>
@@ -140,22 +140,22 @@ export function AssetAllocationChart({ accounts }: AssetAllocationChartProps) {
           {buckets.map((b) => (
             <div
               key={b.name}
-              className="flex items-center justify-between rounded-xl border border-slate-800/60 bg-slate-950/40 p-2.5"
+              className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-slate-50/80 p-2.5 transition-colors dark:border-slate-800/60 dark:bg-slate-950/40"
             >
               <div className="flex min-w-0 items-center gap-2">
                 <span
                   style={{ backgroundColor: b.color }}
                   className="size-2.5 shrink-0 rounded-full shadow-sm"
                 />
-                <span className="truncate text-xs font-medium text-slate-300">
+                <span className="truncate text-xs font-medium text-slate-700 dark:text-slate-300">
                   {b.name}
                 </span>
               </div>
               <div className="shrink-0 text-right">
-                <span className="block text-xs font-bold text-white">
+                <span className="block text-xs font-bold text-slate-900 dark:text-white">
                   {formatRupiah(b.amount)}
                 </span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400">
                   {b.percent}% dari total
                 </span>
               </div>

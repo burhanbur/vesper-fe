@@ -34,7 +34,7 @@ export function CategoryGroups({ categories, onDelete }: CategoryGroupsProps) {
                         <div className="flex items-center gap-2">
                             <h4
                                 id={`category-group-${type}`}
-                                className="text-sm font-semibold text-slate-100"
+                                className="text-sm font-semibold text-slate-900 dark:text-slate-100"
                             >
                                 {label}
                             </h4>
@@ -43,7 +43,7 @@ export function CategoryGroups({ categories, onDelete }: CategoryGroupsProps) {
                             </Badge>
                         </div>
                         {sortedCategories.length === 0 ? (
-                            <p className="text-sm text-slate-400">
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
                                 Belum ada kategori {label.toLowerCase()}.
                             </p>
                         ) : (
@@ -51,13 +51,13 @@ export function CategoryGroups({ categories, onDelete }: CategoryGroupsProps) {
                                 {sortedCategories.map((category) => (
                                     <div
                                         key={category.id}
-                                        className="flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/60 p-3.5"
+                                        className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3.5 dark:border-slate-800 dark:bg-slate-900/60"
                                     >
                                         <div className="flex min-w-0 items-center gap-2.5">
                                             <span aria-hidden="true" className="text-lg">
                                                 {type === 'INCOME' ? '💰' : '💸'}
                                             </span>
-                                            <p className="min-w-0 text-sm font-semibold break-words text-slate-100">
+                                            <p className="min-w-0 text-sm font-semibold break-words text-slate-800 dark:text-slate-100">
                                                 {category.name}
                                             </p>
                                         </div>
@@ -65,7 +65,7 @@ export function CategoryGroups({ categories, onDelete }: CategoryGroupsProps) {
                                             type="button"
                                             onClick={() => onDelete(category.id, category.version)}
                                             aria-label={`Hapus kategori ${label.toLowerCase()} ${category.name}`}
-                                            className="focus-visible:ring-ring shrink-0 rounded p-1 text-slate-500 hover:text-rose-400 focus-visible:ring-2 focus-visible:outline-none"
+                                            className="focus-visible:ring-ring shrink-0 rounded p-1 text-slate-400 hover:text-rose-500 focus-visible:ring-2 focus-visible:outline-none dark:text-slate-500 dark:hover:text-rose-400"
                                         >
                                             <Trash2 aria-hidden="true" className="size-3.5" />
                                         </button>

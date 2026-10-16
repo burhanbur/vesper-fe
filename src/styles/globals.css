@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --color-vesper-dark: #090d16;
@@ -13,32 +15,57 @@
     border-color: rgba(255, 255, 255, 0.08);
   }
 
+  html.light * {
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
   html {
-    color-scheme: dark;
     scroll-behavior: smooth;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  html.light {
+    color-scheme: light;
   }
 
   body {
     min-width: 320px;
     min-height: 100vh;
     margin: 0;
-    background-color: #090d16;
-    color: #f8fafc;
     font-family: var(--font-sans);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+  }
+
+  html.dark body,
+  :root:not(.light) body {
+    background-color: #090d16;
+    color: #f8fafc;
     background-image:
       radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-      radial-gradient(
-        at 100% 0%,
+      radial-gradient(at 100% 0%,
         rgba(16, 185, 129, 0.08) 0px,
-        transparent 50%
-      ),
-      radial-gradient(
-        at 50% 100%,
+        transparent 50%),
+      radial-gradient(at 50% 100%,
         rgba(14, 165, 233, 0.06) 0px,
-        transparent 50%
-      );
+        transparent 50%);
+    background-attachment: fixed;
+  }
+
+  html.light body {
+    background-color: #f8fafc;
+    color: #0f172a;
+    background-image:
+      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
+      radial-gradient(at 100% 0%,
+        rgba(16, 185, 129, 0.04) 0px,
+        transparent 50%),
+      radial-gradient(at 50% 100%,
+        rgba(14, 165, 233, 0.03) 0px,
+        transparent 50%);
     background-attachment: fixed;
   }
 
@@ -54,19 +81,39 @@
     width: 6px;
     height: 6px;
   }
-  ::-webkit-scrollbar-track {
+
+  html.light ::-webkit-scrollbar-track {
+    background: rgba(241, 245, 249, 0.8);
+  }
+
+  html.light ::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.5);
+    border-radius: 9999px;
+  }
+
+  html.light ::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.7);
+  }
+
+  html.dark ::-webkit-scrollbar-track,
+  :root:not(.light) ::-webkit-scrollbar-track {
     background: rgba(15, 23, 42, 0.6);
   }
-  ::-webkit-scrollbar-thumb {
+
+  html.dark ::-webkit-scrollbar-thumb,
+  :root:not(.light) ::-webkit-scrollbar-thumb {
     background: rgba(100, 116, 139, 0.4);
     border-radius: 9999px;
   }
-  ::-webkit-scrollbar-thumb:hover {
+
+  html.dark ::-webkit-scrollbar-thumb:hover,
+  :root:not(.light) ::-webkit-scrollbar-thumb:hover {
     background: rgba(100, 116, 139, 0.6);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {

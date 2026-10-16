@@ -7,14 +7,19 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30',
+        default:
+          'border border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-400',
         success:
-          'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30',
-        destructive: 'bg-rose-500/15 text-rose-400 border border-rose-500/30',
-        warning: 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
-        info: 'bg-sky-500/15 text-sky-400 border border-sky-500/30',
-        secondary: 'bg-slate-800 text-slate-300 border border-slate-700',
-        outline: 'border border-slate-700 text-slate-400',
+          'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-400',
+        destructive:
+          'border border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/15 dark:text-rose-400',
+        warning:
+          'border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-400',
+        info: 'border border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-500/30 dark:bg-sky-500/15 dark:text-sky-400',
+        secondary:
+          'border border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300',
+        outline:
+          'border border-slate-300 text-slate-600 dark:border-slate-700 dark:text-slate-400',
       },
     },
     defaultVariants: {
@@ -24,7 +29,7 @@ const badgeVariants = cva(
 )
 
 export interface BadgeProps
-  extends HTMLAttributes<HTMLSpanElement>, VariantProps<typeof badgeVariants> {}
+  extends HTMLAttributes<HTMLSpanElement>, VariantProps<typeof badgeVariants> { }
 
 export function Badge({ className, variant, ...props }: BadgeProps) {
   return (

@@ -84,8 +84,8 @@ export function Select2({
 
   const activeHighlightedIndex =
     manualHighlightedIndex !== null &&
-    manualHighlightedIndex >= 0 &&
-    manualHighlightedIndex < filteredOptions.length
+      manualHighlightedIndex >= 0 &&
+      manualHighlightedIndex < filteredOptions.length
       ? manualHighlightedIndex
       : defaultHighlightedIndex
 
@@ -185,7 +185,7 @@ export function Select2({
       if (filteredOptions.length > 0) {
         setManualHighlightedIndex(
           (activeHighlightedIndex - 1 + filteredOptions.length) %
-            filteredOptions.length,
+          filteredOptions.length,
         )
       }
     } else if (e.key === 'Enter') {
@@ -228,9 +228,10 @@ export function Select2({
         }}
         onKeyDown={handleTriggerKeyDown}
         className={cn(
-          'group flex w-full items-center justify-between gap-2 rounded-lg border border-slate-700 bg-slate-900/80 text-left text-slate-100 shadow-sm transition-all select-none',
-          'hover:border-slate-600 hover:bg-slate-900/95 focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/40 focus-visible:outline-none',
+          'group flex w-full items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white text-left text-slate-900 shadow-xs transition-all select-none',
+          'hover:border-slate-400 hover:bg-slate-50 focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 focus-visible:outline-none',
           'disabled:cursor-not-allowed disabled:opacity-50',
+          'dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-slate-600 dark:hover:bg-slate-900/95 dark:focus-visible:ring-indigo-500/40',
           isSmall ? 'h-8 px-2.5 text-xs' : 'h-10 px-3 text-sm',
           isOpen && 'border-indigo-500/80 ring-2 ring-indigo-500/30',
           className,
@@ -240,7 +241,12 @@ export function Select2({
           {selectedOption?.icon ? (
             <span className="shrink-0">{selectedOption.icon}</span>
           ) : null}
-          <span className={cn('truncate', !selectedOption && 'text-slate-500')}>
+          <span
+            className={cn(
+              'truncate',
+              !selectedOption && 'text-slate-400 dark:text-slate-500',
+            )}
+          >
             {selectedOption ? selectedOption.label : placeholder}
           </span>
           {selectedOption?.badge ? (
@@ -248,8 +254,8 @@ export function Select2({
               className={cn(
                 'ml-auto shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium',
                 selectedOption.value === 'NEW'
-                  ? 'border border-indigo-500/30 bg-indigo-500/20 text-indigo-300'
-                  : 'border border-slate-800 bg-slate-800/80 text-slate-400',
+                  ? 'border border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/20 dark:text-indigo-300'
+                  : 'border border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400',
               )}
             >
               {selectedOption.badge}
@@ -259,9 +265,9 @@ export function Select2({
 
         <ChevronDown
           className={cn(
-            'shrink-0 text-slate-400 transition-transform duration-200 group-hover:text-slate-200',
+            'shrink-0 text-slate-400 transition-transform duration-200 group-hover:text-slate-600 dark:group-hover:text-slate-200',
             isSmall ? 'size-3.5' : 'size-4',
-            isOpen && 'rotate-180 text-indigo-400',
+            isOpen && 'rotate-180 text-indigo-500 dark:text-indigo-400',
           )}
         />
       </button>
@@ -270,7 +276,7 @@ export function Select2({
       {isOpen ? (
         <div
           className={cn(
-            'absolute z-50 flex flex-col rounded-xl border border-slate-700/80 bg-slate-900/95 p-1.5 text-slate-100 shadow-2xl backdrop-blur-xl',
+            'absolute z-50 flex flex-col rounded-xl border border-slate-200 bg-white p-1.5 text-slate-900 shadow-2xl backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/95 dark:text-slate-100',
             'w-full min-w-[280px] sm:min-w-[320px]',
             align === 'right' ? 'right-0' : 'left-0',
             openDirection === 'up'
@@ -291,7 +297,7 @@ export function Select2({
               }}
               onKeyDown={handleSearchKeyDown}
               placeholder={searchPlaceholder}
-              className="h-8 w-full rounded-lg border border-slate-800 bg-slate-950/80 pr-7 pl-8 text-xs text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+              className="h-8 w-full rounded-lg border border-slate-200 bg-slate-50 pr-7 pl-8 text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100 dark:placeholder:text-slate-500"
             />
             {searchQuery ? (
               <button
@@ -301,7 +307,7 @@ export function Select2({
                   setManualHighlightedIndex(0)
                   searchInputRef.current?.focus()
                 }}
-                className="absolute top-3 right-2.5 grid size-5 place-items-center rounded-md text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                className="absolute top-3 right-2.5 grid size-5 place-items-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                 aria-label="Hapus pencarian"
               >
                 <X className="size-3" />
@@ -317,7 +323,7 @@ export function Select2({
             className="max-h-56 overflow-y-auto px-0.5 py-1 text-xs"
           >
             {filteredOptions.length === 0 ? (
-              <li className="px-3 py-6 text-center text-xs text-slate-500">
+              <li className="px-3 py-6 text-center text-xs text-slate-400 dark:text-slate-500">
                 {emptyMessage}
               </li>
             ) : (
@@ -339,10 +345,10 @@ export function Select2({
                       className={cn(
                         'flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left transition-colors select-none',
                         isSelected
-                          ? 'border-l-2 border-indigo-500 bg-indigo-600/20 font-semibold text-indigo-200'
+                          ? 'border-l-2 border-indigo-500 bg-indigo-50 font-semibold text-indigo-700 dark:bg-indigo-600/20 dark:text-indigo-200'
                           : isHighlighted
-                            ? 'bg-slate-800/80 text-white'
-                            : 'text-slate-300 hover:bg-slate-800/50 hover:text-white',
+                            ? 'bg-slate-100 text-slate-900 dark:bg-slate-800/80 dark:text-white'
+                            : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/50 dark:hover:text-white',
                       )}
                     >
                       <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -352,7 +358,7 @@ export function Select2({
                         <div className="min-w-0">
                           <span className="block truncate">{opt.label}</span>
                           {opt.description ? (
-                            <span className="block truncate text-[10px] font-normal text-slate-500">
+                            <span className="block truncate text-[10px] font-normal text-slate-500 dark:text-slate-400">
                               {opt.description}
                             </span>
                           ) : null}
@@ -365,15 +371,15 @@ export function Select2({
                             className={cn(
                               'rounded px-1.5 py-0.5 text-[10px] font-normal',
                               opt.value === 'NEW'
-                                ? 'border border-indigo-500/30 bg-indigo-500/20 text-indigo-300'
-                                : 'border border-slate-800 bg-slate-800/80 text-slate-400',
+                                ? 'border border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/20 dark:text-indigo-300'
+                                : 'border border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-400',
                             )}
                           >
                             {opt.badge}
                           </span>
                         ) : null}
                         {isSelected ? (
-                          <Check className="size-3.5 shrink-0 text-indigo-400" />
+                          <Check className="size-3.5 shrink-0 text-indigo-600 dark:text-indigo-400" />
                         ) : null}
                       </div>
                     </button>
@@ -385,7 +391,7 @@ export function Select2({
 
           {/* Quick Counter Footer if many items */}
           {options.length > 5 ? (
-            <div className="flex items-center justify-between border-t border-slate-800/60 px-3 py-1.5 text-[10px] text-slate-500">
+            <div className="flex items-center justify-between border-t border-slate-200 px-3 py-1.5 text-[10px] text-slate-500 dark:border-slate-800/60 dark:text-slate-400">
               <span>{filteredOptions.length} pilihan ditemukan</span>
               {searchQuery ? (
                 <span className="text-indigo-400">

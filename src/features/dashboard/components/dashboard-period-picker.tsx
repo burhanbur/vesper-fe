@@ -158,34 +158,43 @@ function PickerPanel({
         setYearPage(Math.min(MAX_YEAR - 11, Math.max(MIN_YEAR, year - (year % 12))))
         setView('yearly')
     }
+
+    useEffect(() => {
+        const panel = panelRef.current
+        if (!panel) return
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key !== 'Tab') return
+            const buttons = panel.querySelectorAll<HTMLButtonElement>(
+                'button:not(:disabled)',
+            )
+            const first = buttons[0]
+            const last = buttons[buttons.length - 1]
+            if (
+                event.shiftKey &&
+                (document.activeElement === first || document.activeElement === panel)
+            ) {
+                event.preventDefault()
+                last?.focus()
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault()
+                first?.focus()
+            }
+        }
+
+        panel.addEventListener('keydown', handleKeyDown)
+        return () => panel.removeEventListener('keydown', handleKeyDown)
+    }, [])
+
     return (
         <div
             ref={panelRef}
             tabIndex={-1}
             className="mx-auto w-full max-w-sm outline-none"
-            onKeyDown={(event) => {
-                if (event.key !== 'Tab') return
-                const buttons = panelRef.current?.querySelectorAll<HTMLButtonElement>(
-                    'button:not(:disabled)',
-                )
-                const first = buttons?.[0]
-                const last = buttons?.[buttons.length - 1]
-                if (
-                    event.shiftKey &&
-                    (document.activeElement === first ||
-                        document.activeElement === panelRef.current)
-                ) {
-                    event.preventDefault()
-                    last?.focus()
-                } else if (!event.shiftKey && document.activeElement === last) {
-                    event.preventDefault()
-                    first?.focus()
-                }
-            }}
         >
             <DialogHeader onClose={onClose}>
                 <DialogTitle id={titleId}>Pilih {label.toLowerCase()}</DialogTitle>
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {view === 'daily'
                         ? 'Pilih tanggal pada kalender'
                         : view === 'monthly'
@@ -217,7 +226,7 @@ function PickerPanel({
                         </Button>
                     )}
                     {view === 'yearly' ? (
-                        <span className="text-sm font-semibold text-slate-100">
+                        <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                             {yearPage} – {yearPage + 11}
                         </span>
                     ) : (
@@ -306,7 +315,7 @@ function PickerPanel({
                     })}
                 </div>
             )}
-            <p className="mt-4 border-t border-slate-800 pt-3 text-center text-xs text-slate-500">
+            <p className="mt-4 border-t border-slate-200 pt-3 text-center text-xs text-slate-500 dark:border-slate-800">
                 {period === 'daily'
                     ? 'Klik bulan atau tahun untuk berpindah cepat.'
                     : 'Rentang tahun 1000–9998.'}

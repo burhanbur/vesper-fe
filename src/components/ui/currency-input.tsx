@@ -166,11 +166,11 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
             eventPhase: 3,
             isTrusted: true,
             nativeEvent: new Event('change'),
-            preventDefault: () => {},
+            preventDefault: () => { },
             isDefaultPrevented: () => false,
-            stopPropagation: () => {},
+            stopPropagation: () => { },
             isPropagationStopped: () => false,
-            persist: () => {},
+            persist: () => { },
             timeStamp: Date.now(),
             type: 'change',
           } as unknown as ChangeEvent<HTMLInputElement>
@@ -262,13 +262,13 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
       <div className={cn('relative w-full', wrapperClassName)}>
         <div
           className={cn(
-            'flex h-10 w-full items-center rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 shadow-sm transition-all focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20',
+            'flex h-10 w-full items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-xs transition-all focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:focus-within:ring-indigo-500/50',
             disabled && 'cursor-not-allowed opacity-50',
             className,
           )}
         >
           {prefix ? (
-            <span className="mr-2 text-xs font-semibold tracking-wider text-slate-400 select-none">
+            <span className="mr-2 text-xs font-semibold tracking-wider text-slate-500 select-none dark:text-slate-400">
               {prefix}
             </span>
           ) : null}
@@ -286,13 +286,13 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
             onKeyDown={handleKeyDown}
-            className="w-full bg-transparent font-medium text-slate-100 placeholder:text-slate-500 focus:outline-none"
+            className="w-full bg-transparent font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none dark:text-slate-100 dark:placeholder:text-slate-500"
           />
 
           {showCompactBadge && compactLabel ? (
             <span
               data-testid="compact-badge"
-              className="ml-2 inline-flex shrink-0 items-center rounded-md border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 text-[11px] font-semibold text-indigo-300"
+              className="ml-2 inline-flex shrink-0 items-center rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300"
               title={`Nominal ringkas: ${compactLabel}`}
             >
               ≈ {compactLabel}
@@ -303,7 +303,7 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
         {showTerbilang && parsedNumber > 0 ? (
           <p
             data-testid="terbilang-text"
-            className="mt-1 text-[11px] text-slate-400 italic"
+            className="mt-1 text-[11px] text-slate-500 italic dark:text-slate-400"
           >
             {terbilangRupiah(parsedNumber)}
           </p>

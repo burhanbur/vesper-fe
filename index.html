@@ -1,21 +1,40 @@
 <!doctype html>
-<html lang="id" class="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Vesper - Modern personal finance and investment management platform."
-    />
-    <meta name="theme-color" content="#090d16" />
-    <title>Vesper | Personal Finance & Wealth Management</title>
-  </head>
+<html lang="id">
 
-  <body
-    class="bg-slate-950 text-slate-100 antialiased selection:bg-emerald-500/30 selection:text-emerald-200"
-  >
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Vesper - Modern personal finance and investment management platform." />
+  <meta name="theme-color" content="#090d16" />
+  <title>Vesper | Personal Finance & Wealth Management</title>
+  <script>
+    ; (function () {
+      try {
+        var stored = localStorage.getItem('vesper-theme')
+        var isDark =
+          stored === 'dark' ||
+          ((!stored || stored === 'system') &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches)
+        var root = document.documentElement
+        if (isDark) {
+          root.classList.add('dark')
+          root.classList.remove('light')
+          root.style.colorScheme = 'dark'
+        } else {
+          root.classList.add('light')
+          root.classList.remove('dark')
+          root.style.colorScheme = 'light'
+        }
+      } catch (e) { }
+    })()
+  </script>
+</head>
+
+<body
+  class="bg-slate-50 text-slate-900 antialiased selection:bg-emerald-500/30 selection:text-emerald-700 dark:bg-slate-950 dark:text-slate-100 dark:selection:text-emerald-200">
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

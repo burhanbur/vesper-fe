@@ -42,7 +42,7 @@ export function TabsList({
   return (
     <div
       className={cn(
-        'inline-flex h-10 items-center justify-center rounded-xl border border-slate-700/60 bg-slate-800/80 p-1 text-slate-400',
+        'inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 p-1 text-slate-600 dark:border-slate-700/60 dark:bg-slate-800/80 dark:text-slate-400',
         className,
       )}
       {...props}
@@ -77,8 +77,8 @@ export function TabsTrigger({
       className={cn(
         'inline-flex cursor-pointer items-center justify-center rounded-lg px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 sm:text-sm',
         isActive
-          ? 'bg-indigo-600 font-semibold text-white shadow-sm'
-          : 'text-slate-400 hover:bg-slate-700/40 hover:text-slate-100',
+          ? 'bg-indigo-600 font-semibold text-white shadow-xs'
+          : 'text-slate-600 hover:bg-white hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700/40 dark:hover:text-slate-100',
         className,
       )}
       {...props}
