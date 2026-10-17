@@ -103,11 +103,11 @@ export function TransactionsView({
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="flex items-center gap-2.5 text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
-              <ReceiptText className="size-7 text-indigo-400" />
+            <h1 className="flex items-center gap-2.5 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+              <ReceiptText className="size-7 text-indigo-600 dark:text-indigo-400" />
               {accountId ? 'Transaksi Akun' : 'Riwayat Transaksi & Transfer'}
             </h1>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               {accountId
                 ? 'Hanya transaksi milik akun ini (account_id), bukan gabungan akun anak.'
                 : 'Semua catatan mutasi keuangan masuk, keluar, dan perpindahan dana.'}
@@ -118,18 +118,18 @@ export function TransactionsView({
             <Button
               variant="outline"
               onClick={() => void navigate({ to: '/import' })}
-              className="gap-1.5 border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20"
+              className="gap-1.5 border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
             >
-              <FolderSync className="size-4 text-indigo-400" />
+              <FolderSync className="size-4 text-indigo-600 dark:text-indigo-400" />
               Impor Money Manager
             </Button>
             <Button
               variant="outline"
               onClick={handleExportCsv}
               disabled={filteredTransactions.length === 0}
-              className="gap-1.5 border-slate-700 text-slate-300 hover:bg-slate-800"
+              className="gap-1.5 border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
             >
-              <Download className="size-4 text-emerald-400" />
+              <Download className="size-4 text-emerald-600 dark:text-emerald-400" />
               Ekspor CSV
             </Button>
             <Button
@@ -146,9 +146,9 @@ export function TransactionsView({
             <Button
               variant="outline"
               onClick={() => setTransferModalOpen(true)}
-              className="gap-1.5 border-slate-700"
+              className="gap-1.5 border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
             >
-              <ArrowRightLeft className="size-4 text-indigo-400" />
+              <ArrowRightLeft className="size-4 text-indigo-600 dark:text-indigo-400" />
               Transfer Antar Akun
             </Button>
           </div>
@@ -160,7 +160,7 @@ export function TransactionsView({
             {/* Type Tabs / Dropdown */}
             <div className="space-y-1">
               <label
-                className="text-[11px] font-medium text-slate-400"
+                className="text-[11px] font-medium text-slate-600 dark:text-slate-400"
                 htmlFor="filter-type"
               >
                 Tipe Transaksi
@@ -183,7 +183,7 @@ export function TransactionsView({
             {/* Account Filter */}
             <div className="space-y-1">
               <label
-                className="text-[11px] font-medium text-slate-400"
+                className="text-[11px] font-medium text-slate-600 dark:text-slate-400"
                 htmlFor="filter-account"
               >
                 Akun / Rekening
@@ -209,7 +209,7 @@ export function TransactionsView({
             {/* Category Filter */}
             <div className="space-y-1">
               <label
-                className="text-[11px] font-medium text-slate-400"
+                className="text-[11px] font-medium text-slate-600 dark:text-slate-400"
                 htmlFor="filter-cat"
               >
                 Kategori
@@ -234,13 +234,13 @@ export function TransactionsView({
             {/* Search Description */}
             <div className="space-y-1">
               <label
-                className="text-[11px] font-medium text-slate-400"
+                className="text-[11px] font-medium text-slate-600 dark:text-slate-400"
                 htmlFor="filter-search"
               >
                 Cari Catatan (halaman ini)
               </label>
               <div className="relative">
-                <Search className="absolute top-3 left-3 size-4 text-slate-500" />
+                <Search className="absolute top-3 left-3 size-4 text-slate-400" />
                 <Input
                   id="filter-search"
                   placeholder="Cari transaksi…"
@@ -257,27 +257,27 @@ export function TransactionsView({
         <Card className="overflow-hidden">
           {isError ? (
             <div role="alert" className="p-8 text-center">
-              <p>Gagal memuat transaksi.</p>
-              <Button onClick={() => void refetch()}>Coba lagi</Button>
+              <p className="text-slate-600 dark:text-slate-400">Gagal memuat transaksi.</p>
+              <Button onClick={() => void refetch()} className="mt-2">Coba lagi</Button>
             </div>
           ) : isLoading ? (
-            <div className="p-12 text-center text-sm text-slate-400">
+            <div className="p-12 text-center text-sm text-slate-500 dark:text-slate-400">
               Memuat data transaksi…
             </div>
           ) : filteredTransactions.length === 0 ? (
             <div className="p-12 text-center">
-              <ReceiptText className="mx-auto mb-3 size-12 text-slate-600" />
-              <h3 className="text-base font-bold text-white">
+              <ReceiptText className="mx-auto mb-3 size-12 text-slate-400 dark:text-slate-600" />
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 Tidak Ada Transaksi
               </h3>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 {transactions.length === 0
                   ? 'Belum ada transaksi untuk akun atau filter ini.'
                   : 'Tidak ada transaksi yang cocok dengan filter yang dipilih.'}
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-800/80 overflow-x-auto">
+            <div className="divide-y divide-slate-200/80 overflow-x-auto dark:divide-slate-800/80">
               {filteredTransactions.map((tx) => {
                 const isIncome = tx.type === 'INCOME'
                 const isTransfer = tx.type === 'TRANSFER'
@@ -289,15 +289,15 @@ export function TransactionsView({
                 return (
                   <div
                     key={tx.id}
-                    className="flex items-center justify-between gap-4 p-4 transition-colors hover:bg-slate-800/30 sm:p-5"
+                    className="flex items-center justify-between gap-4 p-4 transition-colors hover:bg-slate-50/80 sm:p-5 dark:hover:bg-slate-800/30"
                   >
                     <div className="flex min-w-0 items-center gap-3.5">
                       <span
                         className={`grid size-10 shrink-0 place-items-center rounded-xl text-base ${isIncome
-                            ? 'border border-emerald-500/30 bg-emerald-500/15 text-emerald-400'
+                            ? 'border border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-400'
                             : isTransfer
-                              ? 'border border-sky-500/30 bg-sky-500/15 text-sky-400'
-                              : 'border border-rose-500/30 bg-rose-500/15 text-rose-400'
+                              ? 'border border-sky-200 bg-sky-50 text-sky-600 dark:border-sky-500/30 dark:bg-sky-500/15 dark:text-sky-400'
+                              : 'border border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-500/30 dark:bg-rose-500/15 dark:text-rose-400'
                           }`}
                       >
                         {isIncome ? (
@@ -311,7 +311,7 @@ export function TransactionsView({
 
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="truncate text-sm font-semibold text-slate-100 sm:text-base">
+                          <p className="truncate text-sm font-semibold text-slate-900 sm:text-base dark:text-slate-100">
                             {tx.description ||
                               (isIncome
                                 ? 'Pemasukan'
@@ -330,7 +330,7 @@ export function TransactionsView({
                             </Badge>
                           ) : null}
                         </div>
-                        <p className="mt-0.5 text-xs text-slate-400">
+                        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                           {formatDateTime(tx.transacted_at)}
                         </p>
                       </div>
@@ -339,10 +339,10 @@ export function TransactionsView({
                     <div className="flex shrink-0 items-center gap-4">
                       <span
                         className={`font-mono text-base font-bold tracking-tight sm:text-lg ${isIncome
-                            ? 'text-emerald-400'
+                            ? 'text-emerald-600 dark:text-emerald-400'
                             : isTransfer
-                              ? 'text-sky-400'
-                              : 'text-rose-400'
+                              ? 'text-sky-600 dark:text-sky-400'
+                              : 'text-rose-600 dark:text-rose-400'
                           }`}
                       >
                         {isIncome ? '+' : isTransfer ? '' : '-'}
@@ -352,7 +352,7 @@ export function TransactionsView({
                       <button
                         type="button"
                         onClick={() => void handleDelete(tx.id, tx.version)}
-                        className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-rose-400"
+                        className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-rose-400"
                         title="Hapus Transaksi"
                       >
                         <Trash2 className="size-4" />
@@ -369,7 +369,7 @@ export function TransactionsView({
             aria-label="Pagination transaksi"
             className="flex flex-wrap items-center justify-between gap-3"
           >
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               Halaman {pagination.current_page} dari {pagination.last_page} ·{' '}
               {pagination.total} transaksi
             </p>

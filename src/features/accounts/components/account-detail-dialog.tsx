@@ -21,10 +21,10 @@ function formatTimestamp(value: string) {
   return Number.isNaN(date.getTime())
     ? value
     : new Intl.DateTimeFormat('id-ID', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-        timeZone: 'UTC',
-      }).format(date) + ' UTC'
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      timeZone: 'UTC',
+    }).format(date) + ' UTC'
 }
 
 function formatBalance(account: AccountDto) {
@@ -122,8 +122,8 @@ export function AccountDetailDialog({
         <dl className="my-4 max-h-[55dvh] space-y-3 overflow-y-auto pr-2">
           {fields.map(([label, value]) => (
             <div key={label} className="grid gap-1 sm:grid-cols-2 sm:gap-4">
-              <dt className="text-sm text-slate-400">{label}</dt>
-              <dd className="text-sm break-words text-slate-100">{value}</dd>
+              <dt className="text-sm text-slate-500 dark:text-slate-400">{label}</dt>
+              <dd className="text-sm break-words text-slate-900 dark:text-slate-100">{value}</dd>
             </div>
           ))}
         </dl>

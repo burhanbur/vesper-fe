@@ -30,8 +30,8 @@ export function AccountTotalToggle({
         className={cn(
           'h-7 rounded-lg px-2.5 text-[11px] font-medium transition-all',
           account.is_include_total
-            ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300'
-            : 'border-slate-800 bg-slate-900/60 text-slate-500 hover:bg-slate-800 hover:text-slate-400',
+            ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20 dark:hover:text-emerald-300'
+            : 'border-slate-200 bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300',
         )}
         onClick={() =>
           updateAccount.mutate({
@@ -46,14 +46,16 @@ export function AccountTotalToggle({
         <Calculator
           className={cn(
             'mr-1 size-3.5',
-            account.is_include_total ? 'text-emerald-400' : 'text-slate-500',
+            account.is_include_total
+              ? 'text-emerald-600 dark:text-emerald-400'
+              : 'text-slate-400 dark:text-slate-500',
           )}
           aria-hidden="true"
         />
         {updateAccount.isPending ? 'Menyimpan…' : inclusionLabel}
       </Button>
       {updateAccount.isError && (
-        <p role="alert" className="max-w-48 text-xs text-rose-400">
+        <p role="alert" className="max-w-48 text-xs text-rose-500 dark:text-rose-400">
           Gagal mengubah pengaturan total. Coba lagi.
         </p>
       )}

@@ -260,13 +260,18 @@ export function AccountsPage() {
               <button
                 type="button"
                 onClick={() => setSelectedCategory('all')}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'all'
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:bg-slate-200/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+                className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'all'
+                    ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm'
+                    : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
                   }`}
               >
                 Semua
-                <span className="rounded-full bg-slate-200 px-1.5 py-0.5 font-mono text-[11px] text-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
+                <span
+                  className={`rounded-full px-1.5 py-0.5 font-mono text-[11px] ${selectedCategory === 'all'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                    }`}
+                >
                   {categoryCounts.all}
                 </span>
               </button>
@@ -275,13 +280,18 @@ export function AccountsPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('bank')}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'bank'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-200/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+                  className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'bank'
+                      ? 'border-blue-600 bg-blue-600 text-white shadow-sm'
+                      : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
                     }`}
                 >
                   🏦 Bank
-                  <span className="rounded-full bg-slate-200 px-1.5 py-0.5 font-mono text-[11px] text-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 font-mono text-[11px] ${selectedCategory === 'bank'
+                        ? 'bg-white/20 text-white'
+                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                      }`}
+                  >
                     {categoryCounts.bank}
                   </span>
                 </button>
@@ -291,13 +301,18 @@ export function AccountsPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('ewallet')}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'ewallet'
-                      ? 'bg-cyan-600 text-white shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-200/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+                  className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'ewallet'
+                      ? 'border-cyan-600 bg-cyan-600 text-white shadow-sm'
+                      : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
                     }`}
                 >
                   💳 E-Wallet
-                  <span className="rounded-full bg-slate-200 px-1.5 py-0.5 font-mono text-[11px] text-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 font-mono text-[11px] ${selectedCategory === 'ewallet'
+                        ? 'bg-white/20 text-white'
+                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                      }`}
+                  >
                     {categoryCounts.ewallet}
                   </span>
                 </button>
@@ -307,13 +322,18 @@ export function AccountsPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('cash')}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'cash'
-                      ? 'bg-emerald-600 text-white shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-200/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+                  className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'cash'
+                      ? 'border-emerald-600 bg-emerald-600 text-white shadow-sm'
+                      : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
                     }`}
                 >
                   💵 Kas & Tunai
-                  <span className="rounded-full bg-slate-200 px-1.5 py-0.5 font-mono text-[11px] text-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 font-mono text-[11px] ${selectedCategory === 'cash'
+                        ? 'bg-white/20 text-white'
+                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                      }`}
+                  >
                     {categoryCounts.cash}
                   </span>
                 </button>
@@ -323,13 +343,18 @@ export function AccountsPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('investment')}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'investment'
-                      ? 'bg-amber-600 text-white shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-200/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+                  className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'investment'
+                      ? 'border-amber-600 bg-amber-600 text-white shadow-sm'
+                      : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
                     }`}
                 >
                   📈 Investasi
-                  <span className="rounded-full bg-slate-200 px-1.5 py-0.5 font-mono text-[11px] text-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 font-mono text-[11px] ${selectedCategory === 'investment'
+                        ? 'bg-white/20 text-white'
+                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                      }`}
+                  >
                     {categoryCounts.investment}
                   </span>
                 </button>
@@ -339,13 +364,18 @@ export function AccountsPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('liability')}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'liability'
-                      ? 'bg-rose-600 text-white shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-200/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+                  className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'liability'
+                      ? 'border-rose-600 bg-rose-600 text-white shadow-sm'
+                      : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
                     }`}
                 >
                   ⚖️ Hutang
-                  <span className="rounded-full bg-slate-200 px-1.5 py-0.5 font-mono text-[11px] text-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 font-mono text-[11px] ${selectedCategory === 'liability'
+                        ? 'bg-white/20 text-white'
+                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                      }`}
+                  >
                     {categoryCounts.liability}
                   </span>
                 </button>
@@ -413,8 +443,8 @@ export function AccountsPage() {
                     <Badge
                       variant="outline"
                       className={`px-1.5 py-0 text-[10px] ${hideZeroBalances
-                          ? 'border-indigo-400/50 bg-indigo-700/50 text-white'
-                          : ''
+                        ? 'border-indigo-400/50 bg-indigo-700/50 text-white'
+                        : ''
                         }`}
                     >
                       {overviewStats.zeroBalanceCount}
@@ -443,13 +473,13 @@ export function AccountsPage() {
                 )}
 
                 {/* View Mode Toggle (Grouped vs Flat) */}
-                <div className="inline-flex rounded-lg border border-slate-800 bg-slate-900/80 p-0.5">
+                <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-0.5 dark:border-slate-800 dark:bg-slate-900/80">
                   <button
                     type="button"
                     onClick={() => setViewMode('grouped')}
-                    className={`rounded-md p-1.5 text-slate-400 transition-colors ${viewMode === 'grouped'
-                        ? 'bg-slate-800 text-white shadow-sm'
-                        : 'hover:text-slate-200'
+                    className={`rounded-md p-1.5 transition-colors ${viewMode === 'grouped'
+                        ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-white'
+                        : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
                       }`}
                     title="Tampilan Grup Kategori"
                     aria-label="Tampilan Grup Kategori"
@@ -459,9 +489,9 @@ export function AccountsPage() {
                   <button
                     type="button"
                     onClick={() => setViewMode('flat')}
-                    className={`rounded-md p-1.5 text-slate-400 transition-colors ${viewMode === 'flat'
-                        ? 'bg-slate-800 text-white shadow-sm'
-                        : 'hover:text-slate-200'
+                    className={`rounded-md p-1.5 transition-colors ${viewMode === 'flat'
+                        ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-white'
+                        : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
                       }`}
                     title="Tampilan Daftar Datar"
                     aria-label="Tampilan Daftar Datar"

@@ -38,11 +38,11 @@ export function BudgetsPage() {
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="flex items-center gap-2.5 text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
-              <Target className="size-7 text-indigo-400" />
+            <h1 className="flex items-center gap-2.5 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+              <Target className="size-7 text-indigo-600 dark:text-indigo-400" />
               Alokasi Anggaran (Budgets)
             </h1>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               Pantau dan batasi pengeluaran per kategori agar tidak melebihi
               rencana.
             </p>
@@ -56,28 +56,28 @@ export function BudgetsPage() {
 
         {/* Summary Card */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Card className="border-indigo-500/20 bg-slate-900/80 p-5">
-            <p className="text-xs font-semibold tracking-wider text-indigo-400 uppercase">
+          <Card className="border-indigo-100 bg-white p-5 dark:border-indigo-500/20 dark:bg-slate-900/80">
+            <p className="text-xs font-semibold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
               Total Batas Anggaran Terpasang
             </p>
-            <p className="mt-1 text-2xl font-black text-white sm:text-3xl">
+            <p className="mt-1 text-2xl font-black text-slate-900 sm:text-3xl dark:text-white">
               {formatRupiah(totalBudgetLimit)}
             </p>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Akumulasi dari {budgets.length} kategori yang dianggarkan.
             </p>
           </Card>
 
-          <Card className="border-emerald-500/20 bg-slate-900/80 p-5">
-            <p className="text-xs font-semibold tracking-wider text-emerald-400 uppercase">
+          <Card className="border-emerald-100 bg-white p-5 dark:border-emerald-500/20 dark:bg-slate-900/80">
+            <p className="text-xs font-semibold tracking-wider text-emerald-600 uppercase dark:text-emerald-400">
               Status Pengendalian Keuangan
             </p>
-            <p className="mt-1 text-lg font-bold text-white">
+            <p className="mt-1 text-lg font-bold text-slate-900 dark:text-white">
               {budgets.length > 0
                 ? '✓ Alokasi Berjalan'
                 : '⚠️ Belum Ada Anggaran'}
             </p>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Sistem akan memperingatkan jika pengeluaran mendekati 80%.
             </p>
           </Card>
@@ -85,16 +85,16 @@ export function BudgetsPage() {
 
         {/* Budget Cards Grid */}
         {isLoading ? (
-          <Card className="p-12 text-center text-sm text-slate-400">
+          <Card className="p-12 text-center text-sm text-slate-500 dark:text-slate-400">
             Memuat data anggaran…
           </Card>
         ) : budgets.length === 0 ? (
           <Card className="p-12 text-center">
-            <Target className="mx-auto mb-3 size-12 text-slate-600" />
-            <h3 className="text-base font-bold text-white">
+            <Target className="mx-auto mb-3 size-12 text-slate-400 dark:text-slate-600" />
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
               Belum Ada Anggaran
             </h3>
-            <p className="mx-auto mt-1 max-w-sm text-xs text-slate-400">
+            <p className="mx-auto mt-1 max-w-sm text-xs text-slate-500 dark:text-slate-400">
               Buat target pengeluaran pertama Anda (misalnya: Makan, Belanja,
               Transport).
             </p>
@@ -118,11 +118,11 @@ export function BudgetsPage() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-xl">🎯</span>
-                          <h3 className="truncate text-base font-bold text-white">
+                          <h3 className="truncate text-base font-bold text-slate-900 dark:text-white">
                             {cat?.name || 'Kategori'}
                           </h3>
                         </div>
-                        <p className="mt-0.5 truncate text-xs text-slate-400">
+                        <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
                           {b.description ||
                             `Mulai: ${formatDate(b.anchor_date)}`}
                         </p>
@@ -135,7 +135,7 @@ export function BudgetsPage() {
                         <button
                           type="button"
                           onClick={() => void handleDelete(b.id)}
-                          className="rounded-lg p-1 text-slate-500 hover:text-rose-400"
+                          className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-slate-500 dark:hover:text-rose-400"
                           title="Hapus Anggaran"
                         >
                           <Trash2 className="size-3.5" />
@@ -145,13 +145,13 @@ export function BudgetsPage() {
 
                     <div className="mt-4 space-y-1.5">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-400">Batas Anggaran:</span>
-                        <span className="font-mono text-sm font-bold text-white">
+                        <span className="text-slate-500 dark:text-slate-400">Batas Anggaran:</span>
+                        <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">
                           {formatRupiah(allowance)}
                         </span>
                       </div>
                       <Progress value={25} max={100} />
-                      <p className="pt-0.5 text-[11px] text-emerald-400">
+                      <p className="pt-0.5 text-[11px] text-emerald-600 dark:text-emerald-400">
                         Sisa alokasi terkendali
                       </p>
                     </div>

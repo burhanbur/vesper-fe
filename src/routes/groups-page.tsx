@@ -83,11 +83,11 @@ export function GroupsPage() {
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="flex items-center gap-2.5 text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
-              <Users className="size-7 text-indigo-400" />
+            <h1 className="flex items-center gap-2.5 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+              <Users className="size-7 text-indigo-600 dark:text-indigo-400" />
               Keuangan Bersama & Grup Keluarga
             </h1>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               Bagikan visibilitas rekening dengan pasangan atau keluarga secara
               transparan dan aman.
             </p>
@@ -105,9 +105,9 @@ export function GroupsPage() {
             <Button
               variant="outline"
               onClick={() => setJoinModalOpen(true)}
-              className="gap-1.5 border-slate-700"
+              className="gap-1.5 border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
             >
-              <UserPlus className="size-4 text-indigo-400" />
+              <UserPlus className="size-4 text-indigo-600 dark:text-indigo-400" />
               Gabung via Kode
             </Button>
           </div>
@@ -115,16 +115,16 @@ export function GroupsPage() {
 
         {/* Groups Grid / List */}
         {isLoading ? (
-          <Card className="p-12 text-center text-sm text-slate-400">
+          <Card className="p-12 text-center text-sm text-slate-500 dark:text-slate-400">
             Memuat data grup keuangan…
           </Card>
         ) : groups.length === 0 ? (
           <Card className="p-12 text-center">
-            <Users className="mx-auto mb-3 size-12 text-slate-600" />
-            <h3 className="text-base font-bold text-white">
+            <Users className="mx-auto mb-3 size-12 text-slate-400 dark:text-slate-600" />
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
               Belum Ada Grup Keuangan
             </h3>
-            <p className="mx-auto mt-1 max-w-sm text-xs text-slate-400">
+            <p className="mx-auto mt-1 max-w-sm text-xs text-slate-500 dark:text-slate-400">
               Buat grup baru untuk berbagi pengeluaran dengan pasangan atau
               rekan Anda.
             </p>
@@ -136,7 +136,7 @@ export function GroupsPage() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Group Selection Cards (1 col) */}
             <div className="space-y-3">
-              <h2 className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+              <h2 className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 Daftar Grup Anda
               </h2>
               {groups.map((grp) => {
@@ -145,14 +145,13 @@ export function GroupsPage() {
                   <Card
                     key={grp.id}
                     onClick={() => setSelectedGroupId(grp.id)}
-                    className={`cursor-pointer p-4 transition-all ${
-                      isSelected
-                        ? 'border-indigo-500 bg-indigo-950/20'
-                        : 'hover:border-slate-700'
-                    }`}
+                    className={`cursor-pointer p-4 transition-all ${isSelected
+                        ? 'border-indigo-500 bg-indigo-50/70 dark:border-indigo-500 dark:bg-indigo-950/20'
+                        : 'hover:border-slate-300 dark:hover:border-slate-700'
+                      }`}
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="text-base font-bold text-white">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">
                         {grp.name}
                       </h3>
                       <Badge
@@ -162,7 +161,7 @@ export function GroupsPage() {
                         {grp.role}
                       </Badge>
                     </div>
-                    <div className="mt-3 flex items-center justify-between text-xs text-slate-400">
+                    <div className="mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                       <span>Dibuat: {formatDate(grp.created_at)}</span>
                       {grp.code ? (
                         <button
@@ -171,7 +170,7 @@ export function GroupsPage() {
                             e.stopPropagation()
                             copyCode(grp.code)
                           }}
-                          className="flex items-center gap-1 font-mono text-indigo-400 hover:text-indigo-300"
+                          className="flex items-center gap-1 font-mono text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                         >
                           <Copy className="size-3" />
                           {grp.code}
@@ -186,12 +185,12 @@ export function GroupsPage() {
             {/* Active Group Details & Members (2 cols) */}
             <div className="space-y-4 lg:col-span-2">
               <Card className="space-y-6 p-6">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-4 dark:border-slate-800">
                   <div>
-                    <h2 className="text-lg font-bold text-white">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                       Anggota Grup
                     </h2>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       Daftar anggota yang memiliki akses ke akun bersama di grup
                       ini.
                     </p>
@@ -201,9 +200,9 @@ export function GroupsPage() {
                   </Badge>
                 </div>
 
-                <div className="divide-y divide-slate-800/80">
+                <div className="divide-y divide-slate-200/80 dark:divide-slate-800/80">
                   {members.length === 0 ? (
-                    <div className="py-6 text-center text-xs text-slate-400">
+                    <div className="py-6 text-center text-xs text-slate-500 dark:text-slate-400">
                       Belum ada data anggota lain di grup ini.
                     </div>
                   ) : (
@@ -213,14 +212,14 @@ export function GroupsPage() {
                         className="flex items-center justify-between py-3"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="grid size-9 place-items-center rounded-xl bg-slate-800 text-sm font-bold text-slate-200">
+                          <div className="grid size-9 place-items-center rounded-xl bg-slate-100 text-sm font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                             {m.name.slice(0, 2).toUpperCase()}
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-slate-100">
+                            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                               {m.name}
                             </p>
-                            <p className="text-[11px] text-slate-400">
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400">
                               Bergabung: {formatDate(m.created_at)}
                             </p>
                           </div>

@@ -321,13 +321,13 @@ export function MoneyManagerWizard() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       {/* Stepper Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-4 dark:border-slate-800">
         <div>
-          <h1 className="flex items-center gap-2.5 text-2xl font-black text-white">
-            <FolderSync className="size-6 text-indigo-400" />
+          <h1 className="flex items-center gap-2.5 text-2xl font-black text-slate-900 dark:text-white">
+            <FolderSync className="size-6 text-indigo-600 dark:text-indigo-400" />
             Migrasi Data dari Money Manager
           </h1>
-          <p className="mt-0.5 text-xs text-slate-400">
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
             Pindahkan riwayat catatan keuangan Anda dari aplikasi Money Manager
             (Realbyte) ke Vesper.
           </p>
@@ -336,7 +336,7 @@ export function MoneyManagerWizard() {
         {/* Step Badge */}
         <Badge
           variant="outline"
-          className="border-indigo-500/30 font-mono text-xs text-indigo-300"
+          className="border-indigo-200 bg-indigo-50 font-mono text-xs text-indigo-700 dark:border-indigo-500/30 dark:bg-transparent dark:text-indigo-300"
         >
           Langkah{' '}
           {step === 'upload' ? '1/3' : step === 'preview' ? '2/3' : '3/3'}
@@ -347,15 +347,15 @@ export function MoneyManagerWizard() {
       {step === 'upload' ? (
         <div className="space-y-6">
           {/* Instructions Box */}
-          <Card className="border-indigo-500/20 bg-indigo-950/20">
+          <Card className="border-indigo-100 bg-indigo-50/70 dark:border-indigo-500/20 dark:bg-indigo-950/20">
             <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-sm font-bold text-indigo-300">
-                <HelpCircle className="size-4" />
+              <CardTitle className="flex items-center gap-2 text-sm font-bold text-indigo-950 dark:text-indigo-300">
+                <HelpCircle className="size-4 text-indigo-600 dark:text-indigo-400" />
                 Cara Ekspor Data dari HP Anda (Money Manager)
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-xs leading-relaxed text-slate-300">
-              <ol className="list-inside list-decimal space-y-1 text-slate-300">
+            <CardContent className="space-y-2 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+              <ol className="list-inside list-decimal space-y-1 text-slate-700 dark:text-slate-300">
                 <li>
                   Buka aplikasi <strong>Money Manager</strong> di ponsel Android
                   atau iPhone Anda.
@@ -373,32 +373,32 @@ export function MoneyManagerWizard() {
                   untuk memindahkan seluruh tahun).
                 </li>
                 <li>
-                  Kirim atau simpan file <code>.xlsx</code> atau{' '}
-                  <code>.csv</code> ke komputer Anda, lalu unggah di bawah ini.
+                  Kirim atau simpan file <code className="rounded bg-indigo-100 px-1 py-0.5 font-mono text-[11px] text-indigo-800 dark:bg-slate-800 dark:text-slate-200">.xlsx</code> atau{' '}
+                  <code className="rounded bg-indigo-100 px-1 py-0.5 font-mono text-[11px] text-indigo-800 dark:bg-slate-800 dark:text-slate-200">.csv</code> ke komputer Anda, lalu unggah di bawah ini.
                 </li>
               </ol>
             </CardContent>
           </Card>
 
           {/* Detected Real File Card */}
-          <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/60 via-slate-900 to-slate-900 p-5 shadow-xl shadow-indigo-950/30 sm:flex-row sm:items-center">
+          <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50/90 via-white to-white p-5 shadow-sm sm:flex-row sm:items-center dark:border-indigo-500/30 dark:bg-gradient-to-r dark:from-indigo-950/60 dark:via-slate-900 dark:to-slate-900 dark:shadow-xl dark:shadow-indigo-950/30">
             <div className="flex items-start gap-3.5 sm:items-center">
-              <div className="grid size-12 shrink-0 place-items-center rounded-xl border border-indigo-500/30 bg-indigo-500/20 text-indigo-400">
+              <div className="grid size-12 shrink-0 place-items-center rounded-xl border border-indigo-200 bg-indigo-100/70 text-indigo-600 dark:border-indigo-500/30 dark:bg-indigo-500/20 dark:text-indigo-400">
                 <FileSpreadsheet className="size-6" />
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-sm font-bold text-white">
+                  <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">
                     2021-10-12_2026-10-31.xls
                   </span>
                   <Badge
                     variant="default"
-                    className="border-indigo-500/40 bg-indigo-500/20 text-[10px] text-indigo-300"
+                    className="border-indigo-200 bg-indigo-100 text-[10px] font-semibold text-indigo-700 dark:border-indigo-500/40 dark:bg-indigo-500/20 dark:text-indigo-300"
                   >
                     File Anda (4 Tahun Terdeteksi)
                   </Badge>
                 </div>
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
                   File ekspor Money Manager Anda telah terdeteksi di server
                   lokal (~5.018 transaksi siap diimpor).
                 </p>
@@ -437,7 +437,7 @@ export function MoneyManagerWizard() {
                 fileInputRef.current?.click()
               }
             }}
-            className="group relative cursor-pointer rounded-2xl border-2 border-dashed border-slate-700 bg-slate-900/40 p-10 text-center transition-all duration-200 hover:border-indigo-500/80 hover:bg-slate-900/80"
+            className="group relative cursor-pointer rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/70 p-10 text-center transition-all duration-200 hover:border-indigo-400 hover:bg-indigo-50/20 dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-indigo-500/80 dark:hover:bg-slate-900/80"
           >
             <input
               ref={fileInputRef}
@@ -452,25 +452,25 @@ export function MoneyManagerWizard() {
 
             {isParsing ? (
               <div className="flex flex-col items-center gap-3 py-6">
-                <Loader2 className="size-10 animate-spin text-indigo-400" />
-                <p className="text-sm font-semibold text-slate-200">
+                <Loader2 className="size-10 animate-spin text-indigo-600 dark:text-indigo-400" />
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                   Menganalisis file Excel / CSV...
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Mendeteksi kolom tanggal, akun, kategori, dan ratusan
                   transaksi...
                 </p>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-3">
-                <div className="grid size-14 place-items-center rounded-2xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400 transition-transform group-hover:scale-110">
+                <div className="grid size-14 place-items-center rounded-2xl border border-indigo-200 bg-indigo-50 text-indigo-600 transition-transform group-hover:scale-110 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
                   <UploadCloud className="size-7" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
                     Pilih atau Tarik File Cadangan Money Manager
                   </h3>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     Mendukung format file{' '}
                     <strong>.xlsx, .xls, .csv, atau .tsv</strong>
                   </p>
@@ -491,9 +491,9 @@ export function MoneyManagerWizard() {
               variant="outline"
               size="sm"
               onClick={handleDownloadTemplate}
-              className="gap-1.5 border-slate-800 text-xs text-slate-300 hover:bg-slate-800"
+              className="gap-1.5 border-slate-200 text-xs text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
             >
-              <Download className="size-3.5 text-indigo-400" />
+              <Download className="size-3.5 text-indigo-600 dark:text-indigo-400" />
               Unduh Contoh Format File Excel (.xlsx)
             </Button>
 
@@ -501,9 +501,9 @@ export function MoneyManagerWizard() {
               variant="outline"
               size="sm"
               onClick={() => void handleLoadSample()}
-              className="gap-1.5 border border-emerald-500/20 bg-emerald-500/10 text-xs text-emerald-300 hover:bg-emerald-500/20"
+              className="gap-1.5 border border-emerald-500/20 bg-emerald-500/10 text-xs text-emerald-700 hover:bg-emerald-500/20 dark:text-emerald-300"
             >
-              <Sparkles className="size-3.5 text-emerald-400" />
+              <Sparkles className="size-3.5 text-emerald-600 dark:text-emerald-400" />
               Uji Coba dengan Data Sampel
             </Button>
           </div>
@@ -515,11 +515,11 @@ export function MoneyManagerWizard() {
         <div className="animate-in fade-in space-y-6 duration-200">
           {/* Summary Cards */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card className="border-slate-800 bg-slate-900/60 p-4">
-              <span className="block text-[11px] font-medium tracking-wider text-slate-400 uppercase">
+            <Card className="border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/60">
+              <span className="block text-[11px] font-medium tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 Total Transaksi
               </span>
-              <p className="mt-1 text-2xl font-black text-white">
+              <p className="mt-1 text-2xl font-black text-slate-900 dark:text-white">
                 {summary.validRecordsCount} Transaksi
               </p>
               <span className="text-[11px] text-slate-500">
@@ -527,32 +527,32 @@ export function MoneyManagerWizard() {
               </span>
             </Card>
 
-            <Card className="border-slate-800 bg-slate-900/60 p-4">
-              <span className="block text-[11px] font-medium tracking-wider text-slate-400 uppercase">
+            <Card className="border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/60">
+              <span className="block text-[11px] font-medium tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 Rentang Waktu
               </span>
-              <p className="mt-1 text-sm font-bold text-white">
+              <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
                 {summary.earliestDate || '-'} s/d {summary.latestDate || '-'}
               </p>
-              <span className="text-[11px] text-indigo-400">
+              <span className="text-[11px] text-indigo-600 dark:text-indigo-400">
                 Riwayat catatan terdeteksi
               </span>
             </Card>
 
-            <Card className="border-emerald-500/20 bg-slate-900/60 p-4">
-              <span className="block text-[11px] font-medium tracking-wider text-emerald-400 uppercase">
+            <Card className="border-emerald-200 bg-emerald-50/50 p-4 dark:border-emerald-500/20 dark:bg-slate-900/60">
+              <span className="block text-[11px] font-medium tracking-wider text-emerald-600 uppercase dark:text-emerald-400">
                 Pemasukan ({summary.incomeCount})
               </span>
-              <p className="mt-1 font-mono text-lg font-bold text-emerald-400">
+              <p className="mt-1 font-mono text-lg font-bold text-emerald-600 dark:text-emerald-400">
                 {formatRupiah(summary.totalIncomeAmount)}
               </p>
             </Card>
 
-            <Card className="border-rose-500/20 bg-slate-900/60 p-4">
-              <span className="block text-[11px] font-medium tracking-wider text-rose-400 uppercase">
+            <Card className="border-rose-200 bg-rose-50/50 p-4 dark:border-rose-500/20 dark:bg-slate-900/60">
+              <span className="block text-[11px] font-medium tracking-wider text-rose-600 uppercase dark:text-rose-400">
                 Pengeluaran ({summary.expenseCount})
               </span>
-              <p className="mt-1 font-mono text-lg font-bold text-rose-400">
+              <p className="mt-1 font-mono text-lg font-bold text-rose-600 dark:text-rose-400">
                 {formatRupiah(summary.totalExpenseAmount)}
               </p>
             </Card>
@@ -561,11 +561,11 @@ export function MoneyManagerWizard() {
           {/* Account Mapping Review */}
           <Card className="space-y-4 p-5">
             <div>
-              <h3 className="flex items-center gap-2 text-sm font-bold text-white">
-                <Wallet className="size-4 text-indigo-400" />
+              <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+                <Wallet className="size-4 text-indigo-600 dark:text-indigo-400" />
                 Pemetaan Rekening & Akun ({summary.uniqueAccounts.length} Akun)
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Tentukan kemana transaksi dari Money Manager akan disimpan di
                 Vesper.
               </p>
@@ -577,10 +577,10 @@ export function MoneyManagerWizard() {
                 return (
                   <div
                     key={mmAcc}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/60 p-3"
+                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-950/60"
                   >
                     <div className="min-w-0">
-                      <span className="block truncate text-xs font-semibold text-slate-200">
+                      <span className="block truncate text-xs font-semibold text-slate-900 dark:text-slate-200">
                         {mmAcc}
                       </span>
                       <span className="text-[10px] text-slate-500">
@@ -612,11 +612,11 @@ export function MoneyManagerWizard() {
           {/* Category Mapping Review */}
           <Card className="space-y-4 p-5">
             <div>
-              <h3 className="flex items-center gap-2 text-sm font-bold text-white">
-                <FileSpreadsheet className="size-4 text-emerald-400" />
+              <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+                <FileSpreadsheet className="size-4 text-emerald-600 dark:text-emerald-400" />
                 Kategori Transaksi ({summary.uniqueCategories.length} Kategori)
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Kategori baru yang belum ada di Vesper akan dibuatkan otomatis.
               </p>
             </div>
@@ -626,9 +626,9 @@ export function MoneyManagerWizard() {
                 {sortedUniqueCategories.map((mmCat) => (
                   <div
                     key={categoryKey(mmCat.type, mmCat.name)}
-                    className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/40 p-2.5"
+                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50/60 p-2.5 dark:border-slate-800 dark:bg-slate-950/40"
                   >
-                    <span className="truncate text-xs font-medium text-slate-200">
+                    <span className="truncate text-xs font-medium text-slate-900 dark:text-slate-200">
                       {mmCat.name}
                     </span>
                     <Badge
@@ -647,14 +647,14 @@ export function MoneyManagerWizard() {
 
           {/* Sample Table Preview */}
           <Card className="overflow-hidden">
-            <CardHeader className="border-b border-slate-800 p-4">
-              <CardTitle className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+            <CardHeader className="border-b border-slate-200 p-4 dark:border-slate-800">
+              <CardTitle className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 Pratinjau Data (10 Baris Pertama)
               </CardTitle>
             </CardHeader>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="border-b border-slate-800 bg-slate-950 text-slate-400">
+                <thead className="border-b border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
                   <tr>
                     <th className="p-3 font-semibold">Tanggal</th>
                     <th className="p-3 font-semibold">Akun</th>
@@ -664,20 +664,20 @@ export function MoneyManagerWizard() {
                     <th className="p-3 text-center font-semibold">Tipe</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                <tbody className="divide-y divide-slate-200/60 text-slate-700 dark:divide-slate-800/60 dark:text-slate-300">
                   {records.slice(0, 10).map((r) => (
-                    <tr key={r.rowIndex} className="hover:bg-slate-800/30">
+                    <tr key={r.rowIndex} className="hover:bg-slate-50 dark:hover:bg-slate-800/30">
                       <td className="p-3 font-mono text-[11px] whitespace-nowrap">
                         {r.displayDate}
                       </td>
-                      <td className="p-3 font-medium text-slate-200">
+                      <td className="p-3 font-medium text-slate-900 dark:text-slate-200">
                         {r.accountName}
                       </td>
-                      <td className="p-3 text-slate-300">{r.categoryName}</td>
-                      <td className="max-w-xs truncate p-3 text-slate-400">
+                      <td className="p-3 text-slate-600 dark:text-slate-300">{r.categoryName}</td>
+                      <td className="max-w-xs truncate p-3 text-slate-500 dark:text-slate-400">
                         {r.fullDescription}
                       </td>
-                      <td className="p-3 text-right font-mono font-bold text-white">
+                      <td className="p-3 text-right font-mono font-bold text-slate-900 dark:text-white">
                         {formatRupiah(r.amountFormatted)}
                       </td>
                       <td className="p-3 text-center">
@@ -706,7 +706,7 @@ export function MoneyManagerWizard() {
             <Button
               variant="outline"
               onClick={handleReset}
-              className="border-slate-800 text-slate-300"
+              className="border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               Pilih File Lain
             </Button>
@@ -730,20 +730,20 @@ export function MoneyManagerWizard() {
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
               Sedang Memindahkan Data ke Vesper...
             </h2>
-            <p className="text-xs text-slate-400">{progress.currentStatus}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{progress.currentStatus}</p>
           </div>
 
           {/* Progress Bar */}
           <div className="mx-auto max-w-md space-y-2">
             <Progress value={progress.percentage} max={100} className="h-3.5" />
-            <div className="flex items-center justify-between font-mono text-xs text-slate-400">
+            <div className="flex items-center justify-between font-mono text-xs text-slate-500 dark:text-slate-400">
               <span>
                 {progress.current} / {progress.total} transaksi
               </span>
-              <span className="font-bold text-indigo-400">
+              <span className="font-bold text-indigo-600 dark:text-indigo-400">
                 {progress.percentage}%
               </span>
             </div>
@@ -759,22 +759,22 @@ export function MoneyManagerWizard() {
 
       {/* STEP 4: COMPLETED */}
       {step === 'completed' ? (
-        <Card className="space-y-6 border-emerald-500/30 bg-emerald-950/10 p-8 text-center">
-          <div className="mx-auto grid size-16 place-items-center rounded-2xl border border-emerald-500/30 bg-emerald-500/15 text-emerald-400">
+        <Card className="space-y-6 border-emerald-200 bg-emerald-50/30 p-8 text-center dark:border-emerald-500/30 dark:bg-emerald-950/10">
+          <div className="mx-auto grid size-16 place-items-center rounded-2xl border border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
             {progress.errorCount > 0 ? (
-              <AlertCircle className="size-9 text-amber-400" />
+              <AlertCircle className="size-9 text-amber-500" />
             ) : (
               <CheckCircle2 className="size-9" />
             )}
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-2xl font-black text-white">
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">
               {progress.errorCount > 0
                 ? 'Migrasi Belum Berhasil Sepenuhnya'
                 : 'Migrasi Data Berhasil! 🎉'}
             </h2>
-            <p className="mx-auto max-w-lg text-sm text-slate-300">
+            <p className="mx-auto max-w-lg text-sm text-slate-600 dark:text-slate-300">
               {progress.errorCount > 0
                 ? `${progress.successCount} transaksi berhasil diimpor; ${progress.errorCount} transaksi gagal atau belum diproses. Jangan impor ulang seluruh file karena transaksi yang sudah tersimpan dapat terduplikasi.`
                 : 'Seluruh riwayat catatan keuangan Anda dari aplikasi Money Manager telah sukses dipindahkan ke Vesper.'}
@@ -783,35 +783,35 @@ export function MoneyManagerWizard() {
 
           {/* Summary Stats */}
           <div className="mx-auto grid max-w-2xl grid-cols-2 gap-3 pt-2 sm:grid-cols-4">
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3">
-              <span className="text-[10px] text-slate-400 uppercase">
+            <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900/60">
+              <span className="text-[10px] text-slate-500 uppercase dark:text-slate-400">
                 Sukses Diimpor
               </span>
-              <p className="mt-0.5 font-mono text-xl font-bold text-emerald-400">
+              <p className="mt-0.5 font-mono text-xl font-bold text-emerald-600 dark:text-emerald-400">
                 {progress.successCount}
               </p>
             </div>
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3">
-              <span className="text-[10px] text-slate-400 uppercase">
+            <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900/60">
+              <span className="text-[10px] text-slate-500 uppercase dark:text-slate-400">
                 Akun Dibuat
               </span>
-              <p className="mt-0.5 font-mono text-xl font-bold text-indigo-400">
+              <p className="mt-0.5 font-mono text-xl font-bold text-indigo-600 dark:text-indigo-400">
                 {progress.accountsCreated}
               </p>
             </div>
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3">
-              <span className="text-[10px] text-slate-400 uppercase">
+            <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900/60">
+              <span className="text-[10px] text-slate-500 uppercase dark:text-slate-400">
                 Kategori Dibuat
               </span>
-              <p className="mt-0.5 font-mono text-xl font-bold text-cyan-400">
+              <p className="mt-0.5 font-mono text-xl font-bold text-cyan-600 dark:text-cyan-400">
                 {progress.categoriesCreated}
               </p>
             </div>
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3">
-              <span className="text-[10px] text-slate-400 uppercase">
+            <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900/60">
+              <span className="text-[10px] text-slate-500 uppercase dark:text-slate-400">
                 Gagal / Lewat
               </span>
-              <p className="mt-0.5 font-mono text-xl font-bold text-slate-400">
+              <p className="mt-0.5 font-mono text-xl font-bold text-slate-500 dark:text-slate-400">
                 {progress.errorCount}
               </p>
             </div>
@@ -819,13 +819,13 @@ export function MoneyManagerWizard() {
 
           {/* Error Details if any */}
           {progress.errors.length > 0 ? (
-            <div className="mx-auto max-w-xl space-y-1 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-left text-xs text-amber-300">
+            <div className="mx-auto max-w-xl space-y-1 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-left text-xs text-amber-700 dark:text-amber-300">
               <div className="flex items-center gap-1.5 font-semibold">
                 <AlertCircle className="size-4 shrink-0" />
                 Catatan: {progress.errors.length} transaksi gagal atau belum
                 diproses:
               </div>
-              <ul className="max-h-24 list-inside list-disc space-y-0.5 overflow-y-auto text-[11px] text-amber-200/80">
+              <ul className="max-h-24 list-inside list-disc space-y-0.5 overflow-y-auto text-[11px] text-amber-800/80 dark:text-amber-200/80">
                 {progress.errors.slice(0, 5).map((e, idx) => (
                   <li key={idx}>
                     Baris {e.index}: {e.error} ({e.description})
@@ -852,7 +852,7 @@ export function MoneyManagerWizard() {
             <Button
               variant="outline"
               onClick={() => void navigate({ to: '/dashboard' })}
-              className="w-full border-slate-800 text-slate-300 hover:bg-slate-800 sm:w-auto"
+              className="w-full border-slate-200 text-slate-700 hover:bg-slate-100 sm:w-auto dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               Buka Dashboard
             </Button>
