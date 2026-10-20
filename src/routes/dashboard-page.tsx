@@ -193,7 +193,7 @@ export function DashboardPage() {
           </Card>
 
           {/* Total Pemasukan */}
-          <Card className="relative overflow-hidden border-emerald-200/80 bg-gradient-to-br from-emerald-50/70 via-white to-white shadow-sm dark:border-emerald-500/20 dark:bg-slate-900/80 dark:shadow-none">
+          <Card className="relative overflow-hidden border-emerald-200/80 bg-gradient-to-br from-emerald-50/70 via-white to-white shadow-sm dark:border-emerald-500/20 dark:bg-slate-900/80 dark:bg-none dark:shadow-none">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold tracking-wider text-emerald-600 uppercase dark:text-emerald-400">
@@ -215,7 +215,7 @@ export function DashboardPage() {
           </Card>
 
           {/* Total Pengeluaran */}
-          <Card className="relative overflow-hidden border-rose-200/80 bg-gradient-to-br from-rose-50/70 via-white to-white shadow-sm dark:border-rose-500/20 dark:bg-slate-900/80 dark:shadow-none">
+          <Card className="relative overflow-hidden border-rose-200/80 bg-gradient-to-br from-rose-50/70 via-white to-white shadow-sm dark:border-rose-500/20 dark:bg-slate-900/80 dark:bg-none dark:shadow-none">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold tracking-wider text-rose-600 uppercase dark:text-rose-400">
@@ -234,8 +234,8 @@ export function DashboardPage() {
                 <span>Net Savings:</span>
                 <span
                   className={`font-semibold ${netCashflow >= 0
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-rose-600 dark:text-rose-400'
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-rose-600 dark:text-rose-400'
                     }`}
                 >
                   {cashflowStatus ?? formatRupiah(netCashflow)}
@@ -392,10 +392,10 @@ export function DashboardPage() {
                       <div className="flex min-w-0 items-center gap-3">
                         <span
                           className={`grid size-9 place-items-center rounded-xl text-sm ${isIncome
-                              ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400'
-                              : isTransfer
-                                ? 'bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400'
-                                : 'bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400'
+                            ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400'
+                            : isTransfer
+                              ? 'bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400'
+                              : 'bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400'
                             }`}
                         >
                           {isIncome ? (
@@ -424,10 +424,10 @@ export function DashboardPage() {
                       <div className="shrink-0 text-right">
                         <span
                           className={`font-mono text-sm font-bold tracking-tight ${isIncome
-                              ? 'text-emerald-600 dark:text-emerald-400'
-                              : isTransfer
-                                ? 'text-sky-600 dark:text-sky-400'
-                                : 'text-rose-600 dark:text-rose-400'
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : isTransfer
+                              ? 'text-sky-600 dark:text-sky-400'
+                              : 'text-rose-600 dark:text-rose-400'
                             }`}
                         >
                           {isIncome ? '+' : isTransfer ? '' : '-'}
