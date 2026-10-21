@@ -71,11 +71,10 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             setMode('login')
             setSubmitError(null)
           }}
-          className={`rounded-lg py-2 text-xs font-semibold transition-all ${
-            mode === 'login'
+          className={`rounded-lg py-2 text-xs font-semibold transition-all ${mode === 'login'
               ? 'bg-indigo-600 text-white shadow-sm'
               : 'text-slate-400 hover:text-slate-200'
-          }`}
+            }`}
         >
           Masuk (Sign in)
         </button>
@@ -85,11 +84,10 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             setMode('register')
             setSubmitError(null)
           }}
-          className={`rounded-lg py-2 text-xs font-semibold transition-all ${
-            mode === 'register'
+          className={`rounded-lg py-2 text-xs font-semibold transition-all ${mode === 'register'
               ? 'bg-indigo-600 text-white shadow-sm'
               : 'text-slate-400 hover:text-slate-200'
-          }`}
+            }`}
         >
           Daftar (Register)
         </button>
