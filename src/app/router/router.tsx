@@ -15,6 +15,7 @@ import { DashboardPage } from '@/routes/dashboard-page'
 import { GroupsPage } from '@/routes/groups-page'
 import { ImportPage } from '@/routes/import-page'
 import { InvestmentsPage } from '@/routes/investments-page'
+import { LandingPage } from '@/routes/landing-page'
 import { LoginPage } from '@/routes/login-page'
 import { NotFoundPage } from '@/routes/not-found-page'
 import { RouteErrorPage } from '@/routes/route-error-page'
@@ -32,13 +33,7 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  beforeLoad: () => {
-    const destination =
-      authSession.getSnapshot().status === 'authenticated'
-        ? '/dashboard'
-        : '/login'
-    return redirect({ to: destination })
-  },
+  component: LandingPage,
 })
 
 const loginRoute = createRoute({
