@@ -33,7 +33,7 @@ export function LoginPage() {
           <CardHeader className="pb-4">
             <h2 className="text-base font-bold text-white">Akses Akun</h2>
             <p className="text-xs text-slate-400">
-              Masuk dengan akun terdaftar atau coba demo instan.
+              Masuk dengan akun Anda atau buat akun baru.
             </p>
           </CardHeader>
           <CardContent>

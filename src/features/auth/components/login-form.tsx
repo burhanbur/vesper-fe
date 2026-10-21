@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { LoaderCircle, LogIn, Sparkles, UserPlus } from 'lucide-react'
+import { LoaderCircle, LogIn, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
@@ -61,11 +61,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     }
   })
 
-  function handleFillDemo() {
-    loginForm.setValue('identifier', 'burhanburdev@gmail.com')
-    loginForm.setValue('password', 'burhan123')
-  }
-
   return (
     <div className="space-y-6">
       {/* Mode Tabs */}
@@ -126,7 +121,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               id="identifier"
               autoComplete="username"
               aria-invalid={Boolean(loginForm.formState.errors.identifier)}
-              placeholder="burhanburdev@gmail.com atau bmafazi"
+              placeholder="nama@email.com atau username"
               {...loginForm.register('identifier')}
             />
             {loginForm.formState.errors.identifier ? (
@@ -173,16 +168,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             )}
             {loginForm.formState.isSubmitting ? 'Signing in…' : 'Sign in'}
           </Button>
-
-          {/* Quick Demo Credentials Autofill */}
-          <button
-            type="button"
-            onClick={handleFillDemo}
-            className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-dashed border-indigo-500/40 bg-indigo-500/5 px-3 py-2.5 text-xs font-medium text-indigo-300 transition-colors hover:bg-indigo-500/10"
-          >
-            <Sparkles className="size-3.5 text-indigo-400" />
-            Gunakan Akun Demo: Burhan Mafazi
-          </button>
         </form>
       ) : (
         <form

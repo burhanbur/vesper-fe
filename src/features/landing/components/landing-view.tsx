@@ -11,21 +11,21 @@ import { LandingOfflineFirst } from '@/features/landing/components/landing-offli
 import { LandingPreviewMockup } from '@/features/landing/components/landing-preview-mockup'
 
 export function LandingView() {
-    return (
-        <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-200 dark:bg-[#090D16] dark:text-slate-100">
-            <LandingHeader />
-            <main>
-                <LandingHero />
-                <LandingPreviewMockup />
-                <LandingFeatures />
-                <LandingMultiAsset />
-                <LandingGroupCollaboration />
-                <LandingOfflineFirst />
-                <LandingCalculator />
-                <LandingFaq />
-                <LandingCta />
-            </main>
-            <LandingFooter />
-        </div>
-    )
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-200 dark:bg-[#090D16] dark:text-slate-100">
+      <LandingHeader />
+      <main>
+        <LandingHero />
+        <LandingPreviewMockup />
+        <LandingFeatures />
+        <LandingMultiAsset />
+        <LandingGroupCollaboration />
+        <LandingOfflineFirst />
+        <LandingCalculator />
+        <LandingFaq />
+        <LandingCta />
+      </main>
+      <LandingFooter />
+    </div>
+  )
 }
