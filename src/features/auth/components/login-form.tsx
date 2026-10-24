@@ -64,7 +64,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   return (
     <div className="space-y-6">
       {/* Mode Tabs */}
-      <div className="grid grid-cols-2 rounded-xl border border-slate-800 bg-slate-900/90 p-1">
+      <div className="grid grid-cols-2 rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-800 dark:bg-slate-900/90">
         <button
           type="button"
           onClick={() => {
@@ -73,7 +73,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           }}
           className={`rounded-lg py-2 text-xs font-semibold transition-all ${mode === 'login'
               ? 'bg-indigo-600 text-white shadow-sm'
-              : 'text-slate-400 hover:text-slate-200'
+              : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
         >
           Masuk (Sign in)
@@ -86,7 +86,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           }}
           className={`rounded-lg py-2 text-xs font-semibold transition-all ${mode === 'register'
               ? 'bg-indigo-600 text-white shadow-sm'
-              : 'text-slate-400 hover:text-slate-200'
+              : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
         >
           Daftar (Register)
@@ -95,7 +95,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
       {submitError ? (
         <div
-          className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-xs text-rose-400"
+          className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-xs text-rose-700 dark:text-rose-400"
           role="alert"
         >
           {submitError}
@@ -110,7 +110,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         >
           <div className="space-y-1.5">
             <label
-              className="text-xs font-medium text-slate-300"
+              className="text-xs font-medium text-slate-700 dark:text-slate-300"
               htmlFor="identifier"
             >
               Username or email
@@ -123,7 +123,10 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               {...loginForm.register('identifier')}
             />
             {loginForm.formState.errors.identifier ? (
-              <p className="text-xs text-rose-400" id="identifier-error">
+              <p
+                className="text-xs text-rose-700 dark:text-rose-400"
+                id="identifier-error"
+              >
                 {loginForm.formState.errors.identifier.message}
               </p>
             ) : null}
@@ -131,7 +134,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
           <div className="space-y-1.5">
             <label
-              className="text-xs font-medium text-slate-300"
+              className="text-xs font-medium text-slate-700 dark:text-slate-300"
               htmlFor="password"
             >
               Password
@@ -145,7 +148,10 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               {...loginForm.register('password')}
             />
             {loginForm.formState.errors.password ? (
-              <p className="text-xs text-rose-400" id="password-error">
+              <p
+                className="text-xs text-rose-700 dark:text-rose-400"
+                id="password-error"
+              >
                 {loginForm.formState.errors.password.message}
               </p>
             ) : null}
@@ -175,7 +181,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         >
           <div className="space-y-1.5">
             <label
-              className="text-xs font-medium text-slate-300"
+              className="text-xs font-medium text-slate-700 dark:text-slate-300"
               htmlFor="reg-name"
             >
               Nama Lengkap
@@ -186,7 +192,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               {...registerForm.register('name')}
             />
             {registerForm.formState.errors.name ? (
-              <p className="text-xs text-rose-400">
+              <p className="text-xs text-rose-700 dark:text-rose-400">
                 {registerForm.formState.errors.name.message}
               </p>
             ) : null}
@@ -194,7 +200,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
           <div className="space-y-1.5">
             <label
-              className="text-xs font-medium text-slate-300"
+              className="text-xs font-medium text-slate-700 dark:text-slate-300"
               htmlFor="reg-username"
             >
               Username (Opsional)
@@ -208,7 +214,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
           <div className="space-y-1.5">
             <label
-              className="text-xs font-medium text-slate-300"
+              className="text-xs font-medium text-slate-700 dark:text-slate-300"
               htmlFor="reg-email"
             >
               Alamat Email
@@ -220,7 +226,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               {...registerForm.register('email')}
             />
             {registerForm.formState.errors.email ? (
-              <p className="text-xs text-rose-400">
+              <p className="text-xs text-rose-700 dark:text-rose-400">
                 {registerForm.formState.errors.email.message}
               </p>
             ) : null}
@@ -228,7 +234,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
           <div className="space-y-1.5">
             <label
-              className="text-xs font-medium text-slate-300"
+              className="text-xs font-medium text-slate-700 dark:text-slate-300"
               htmlFor="reg-password"
             >
               Password (Minimal 8 Karakter)
@@ -240,7 +246,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               {...registerForm.register('password')}
             />
             {registerForm.formState.errors.password ? (
-              <p className="text-xs text-rose-400">
+              <p className="text-xs text-rose-700 dark:text-rose-400">
                 {registerForm.formState.errors.password.message}
               </p>
             ) : null}
