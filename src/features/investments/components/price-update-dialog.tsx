@@ -11,6 +11,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { useCreatePrice, useInstruments } from '../hooks/use-investments'
+import { toDateInputValue } from '@/lib/timezone'
+import { useTimezone } from '@/hooks/use-timezone'
 
 interface PriceUpdateDialogProps {
   readonly open: boolean
@@ -23,9 +25,10 @@ export function PriceUpdateDialog({
   onOpenChange,
   defaultInstrumentId,
 }: PriceUpdateDialogProps) {
+  const { timezone } = useTimezone()
   const [instrumentId, setInstrumentId] = useState(defaultInstrumentId ?? '')
   const [priceDate, setPriceDate] = useState(() =>
-    new Date().toISOString().slice(0, 10),
+    toDateInputValue(new Date(), timezone),
   )
   const [closePrice, setClosePrice] = useState('')
   const [error, setError] = useState<string | null>(null)

@@ -25,6 +25,9 @@ import {
 import { parseCurrency, sanitizeCurrency } from '@/lib/currency'
 import { formatRupiah } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
+import { InlineTimezoneSelect } from '@/components/common/timezone-selector'
+import { useTimezone } from '@/hooks/use-timezone'
+import { fromDatetimeLocalValue, toDatetimeLocalValue } from '@/lib/timezone'
 import { useCreateTransfer } from '../hooks/use-transactions'
 
 interface TransferFormDialogProps {
@@ -52,11 +55,15 @@ export function TransferFormDialog({
   open,
   onOpenChange,
 }: TransferFormDialogProps) {
+  const { timezone } = useTimezone()
+  const [formTimezone, setFormTimezone] = useState(timezone)
   const [fromAccountId, setFromAccountId] = useState('')
   const [toAccountId, setToAccountId] = useState('')
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 16))
+  const [date, setDate] = useState(() =>
+    toDatetimeLocalValue(new Date(), timezone),
+  )
   const [error, setError] = useState<string | null>(null)
 
   const { data: accounts = [] } = useAccounts()
@@ -156,11 +163,19 @@ export function TransferFormDialog({
     setAmount(bal.toString())
   }
 
+  function handleTimezoneChange(nextTz: string) {
+    if (date) {
+      const utc = fromDatetimeLocalValue(date, formTimezone)
+      setDate(toDatetimeLocalValue(utc, nextTz))
+    }
+    setFormTimezone(nextTz)
+  }
+
   function resetForm() {
     setAmount('')
     setDescription('')
     setError(null)
-    setDate(new Date().toISOString().slice(0, 16))
+    setDate(toDatetimeLocalValue(new Date(), formTimezone))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -182,7 +197,7 @@ export function TransferFormDialog({
         from_account_id: selectedFrom,
         to_account_id: selectedTo,
         amount: sanitizeCurrency(amount, { toFixed: 2 }),
-        transacted_at: new Date(date).toISOString(),
+        transacted_at: fromDatetimeLocalValue(date, formTimezone),
         description: description.trim() || null,
       })
       resetForm()
@@ -374,9 +389,9 @@ export function TransferFormDialog({
 
           {/* Real-time Balance Simulation Card */}
           {numAmount > 0 &&
-          selectedFrom !== selectedTo &&
-          fromAccount &&
-          toAccount ? (
+            selectedFrom !== selectedTo &&
+            fromAccount &&
+            toAccount ? (
             <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-3 text-xs transition-all dark:border-indigo-900/40 dark:bg-indigo-950/20">
               <div className="flex items-center justify-between border-b border-indigo-100/80 pb-2 dark:border-indigo-900/40">
                 <div className="flex items-center gap-1.5 font-medium text-indigo-950 dark:text-indigo-200">
@@ -430,15 +445,23 @@ export function TransferFormDialog({
           {/* Date & Time */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <label
-                className="font-medium text-slate-700 dark:text-slate-300"
-                htmlFor="tf-date"
-              >
-                Tanggal & Waktu
-              </label>
+              <div className="flex items-center gap-2">
+                <label
+                  className="font-medium text-slate-700 dark:text-slate-300"
+                  htmlFor="tf-date"
+                >
+                  Tanggal & Waktu
+                </label>
+                <InlineTimezoneSelect
+                  value={formTimezone}
+                  onChange={handleTimezoneChange}
+                />
+              </div>
               <button
                 type="button"
-                onClick={() => setDate(new Date().toISOString().slice(0, 16))}
+                onClick={() =>
+                  setDate(toDatetimeLocalValue(new Date(), formTimezone))
+                }
                 className="flex items-center gap-1 text-[11px] font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
               >
                 <Clock className="size-3" />

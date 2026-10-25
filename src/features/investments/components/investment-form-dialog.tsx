@@ -16,6 +16,9 @@ import {
   useInstruments,
 } from '../hooks/use-investments'
 import type { InvestmentTransactionType } from '../types/investment'
+import { InlineTimezoneSelect } from '@/components/common/timezone-selector'
+import { useTimezone } from '@/hooks/use-timezone'
+import { fromDatetimeLocalValue, toDatetimeLocalValue } from '@/lib/timezone'
 
 interface InvestmentFormDialogProps {
   readonly open: boolean
@@ -26,6 +29,8 @@ export function InvestmentFormDialog({
   open,
   onOpenChange,
 }: InvestmentFormDialogProps) {
+  const { timezone } = useTimezone()
+  const [formTimezone, setFormTimezone] = useState(timezone)
   const [type, setType] = useState<InvestmentTransactionType>('BUY')
   const [instrumentId, setInstrumentId] = useState('')
   const [accountId, setAccountId] = useState('')
@@ -33,7 +38,9 @@ export function InvestmentFormDialog({
   const [quantity, setQuantity] = useState('')
   const [pricePerUnit, setPricePerUnit] = useState('')
   const [fee, setFee] = useState('0')
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 16))
+  const [date, setDate] = useState(() =>
+    toDatetimeLocalValue(new Date(), timezone),
+  )
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
 
@@ -57,6 +64,14 @@ export function InvestmentFormDialog({
   const selectedInstrument = instrumentId || (instruments[0]?.id ?? '')
   const selectedAccount = accountId || (targetAccounts[0]?.id ?? '')
   const selectedCashAccount = cashAccountId || (accounts[0]?.id ?? '')
+
+  function handleTimezoneChange(nextTz: string) {
+    if (date) {
+      const utc = fromDatetimeLocalValue(date, formTimezone)
+      setDate(toDatetimeLocalValue(utc, nextTz))
+    }
+    setFormTimezone(nextTz)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -94,7 +109,7 @@ export function InvestmentFormDialog({
         quantity: qtyNum.toString(),
         price_per_unit: priceNum.toString(),
         fee: parseFloat(fee || '0').toFixed(2),
-        transacted_at: new Date(date).toISOString(),
+        transacted_at: fromDatetimeLocalValue(date, formTimezone),
         description: description.trim() || null,
       })
       setQuantity('')
@@ -136,33 +151,30 @@ export function InvestmentFormDialog({
             <button
               type="button"
               onClick={() => setType('BUY')}
-              className={`rounded-xl py-2 text-xs font-semibold transition-all ${
-                type === 'BUY'
+              className={`rounded-xl py-2 text-xs font-semibold transition-all ${type === 'BUY'
                   ? 'border border-emerald-500/40 bg-emerald-500/20 text-emerald-300 shadow-sm'
                   : 'border border-transparent bg-slate-800/60 text-slate-400'
-              }`}
+                }`}
             >
               BELI (BUY)
             </button>
             <button
               type="button"
               onClick={() => setType('SELL')}
-              className={`rounded-xl py-2 text-xs font-semibold transition-all ${
-                type === 'SELL'
+              className={`rounded-xl py-2 text-xs font-semibold transition-all ${type === 'SELL'
                   ? 'border border-rose-500/40 bg-rose-500/20 text-rose-300 shadow-sm'
                   : 'border border-transparent bg-slate-800/60 text-slate-400'
-              }`}
+                }`}
             >
               JUAL (SELL)
             </button>
             <button
               type="button"
               onClick={() => setType('DIVIDEND')}
-              className={`rounded-xl py-2 text-xs font-semibold transition-all ${
-                type === 'DIVIDEND'
+              className={`rounded-xl py-2 text-xs font-semibold transition-all ${type === 'DIVIDEND'
                   ? 'border border-indigo-500/40 bg-indigo-500/20 text-indigo-300 shadow-sm'
                   : 'border border-transparent bg-slate-800/60 text-slate-400'
-              }`}
+                }`}
             >
               DIVIDEN
             </button>
@@ -290,12 +302,18 @@ export function InvestmentFormDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <label
-                className="text-xs font-medium text-slate-300"
-                htmlFor="inv-date"
-              >
-                Tanggal & Waktu
-              </label>
+              <div className="flex items-center justify-between text-xs">
+                <label
+                  className="font-medium text-slate-300"
+                  htmlFor="inv-date"
+                >
+                  Tanggal & Waktu
+                </label>
+                <InlineTimezoneSelect
+                  value={formTimezone}
+                  onChange={handleTimezoneChange}
+                />
+              </div>
               <Input
                 id="inv-date"
                 type="datetime-local"

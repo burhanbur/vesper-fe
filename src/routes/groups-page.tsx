@@ -1,6 +1,14 @@
 import { useNavigate } from '@tanstack/react-router'
-import { Copy, Plus, UserPlus, Users } from 'lucide-react'
-import { useState } from 'react'
+import {
+  CreditCard,
+  Layers,
+  PieChart,
+  Plus,
+  Share2,
+  UserPlus,
+  Users,
+} from 'lucide-react'
+import { useState, type SyntheticEvent } from 'react'
 import { toast } from 'sonner'
 import { AppShell } from '@/components/layout/app-shell'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +23,16 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs'
+import {
+  GroupAccountsView,
+  GroupCategoriesView,
+  GroupCollaborationView,
+  GroupMembersView,
   useCreateGroup,
   useGroupMembers,
   useGroups,
@@ -30,15 +48,25 @@ export function GroupsPage() {
   const [newGroupName, setNewGroupName] = useState('')
   const [joinCode, setJoinCode] = useState('')
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState('ringkasan')
+
+  // Default period to current UTC year-month YYYY-MM
+  const now = new Date()
+  const initialPeriod = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`
+  const [period, setPeriod] = useState(initialPeriod)
 
   const { data: groups = [], isLoading } = useGroups()
   const createGroup = useCreateGroup()
   const joinGroup = useJoinGroup()
 
-  const activeGroupId = selectedGroupId || (groups[0]?.id ?? null)
+  // Resolved active group
+  const activeGroup =
+    groups.find((g) => g.id === selectedGroupId) || groups[0] || null
+  const activeGroupId = activeGroup?.id ?? null
+
   const { data: members = [] } = useGroupMembers(activeGroupId || '')
 
-  async function handleCreateGroup(e: React.FormEvent) {
+  async function handleCreateGroup(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!newGroupName.trim()) return
 
@@ -46,35 +74,35 @@ export function GroupsPage() {
       const res = await createGroup.mutateAsync({ name: newGroupName.trim() })
       setNewGroupName('')
       setCreateModalOpen(false)
+      setSelectedGroupId(res.id)
       if (res.code) {
         toast.success(`Grup berhasil dibuat! Kode undangan: ${res.code}`)
+      } else {
+        toast.success('Grup berhasil dibuat!')
       }
     } catch {
       toast.error('Gagal membuat grup baru.')
     }
   }
 
-  async function handleJoinGroup(e: React.FormEvent) {
+  async function handleJoinGroup(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (!joinCode.trim() || !activeGroupId) return
+    const trimmedCode = joinCode.trim().toUpperCase()
+    if (!trimmedCode) return
 
     try {
-      await joinGroup.mutateAsync({
-        groupId: activeGroupId,
-        input: { code: joinCode.trim().toUpperCase() },
+      const joined = await joinGroup.mutateAsync({
+        code: trimmedCode,
       })
       setJoinCode('')
       setJoinModalOpen(false)
+      if (joined?.id) {
+        setSelectedGroupId(joined.id)
+      }
       toast.success('Berhasil bergabung ke grup!')
     } catch {
-      toast.error('Kode undangan tidak valid atau kedaluwarsa.')
+      toast.error('Kode undangan tidak valid, kedaluwarsa, atau grup tidak ditemukan.')
     }
-  }
-
-  function copyCode(code?: string) {
-    if (!code) return
-    void navigator.clipboard.writeText(code)
-    toast.info('Kode undangan disalin ke clipboard!')
   }
 
   return (
@@ -88,8 +116,7 @@ export function GroupsPage() {
               Keuangan Bersama & Grup Keluarga
             </h1>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Bagikan visibilitas rekening dengan pasangan atau keluarga secara
-              transparan dan aman.
+              Kelola kas bersama, rekening terhubung, dan alokasi anggaran keluarga secara transparan dan aman.
             </p>
           </div>
 
@@ -113,131 +140,187 @@ export function GroupsPage() {
           </div>
         </div>
 
-        {/* Groups Grid / List */}
-        {isLoading ? (
-          <Card className="p-12 text-center text-sm text-slate-500 dark:text-slate-400">
-            Memuat data grup keuangan…
-          </Card>
-        ) : groups.length === 0 ? (
-          <Card className="p-12 text-center">
-            <Users className="mx-auto mb-3 size-12 text-slate-400 dark:text-slate-600" />
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              Belum Ada Grup Keuangan
-            </h3>
-            <p className="mx-auto mt-1 max-w-sm text-xs text-slate-500 dark:text-slate-400">
-              Buat grup baru untuk berbagi pengeluaran dengan pasangan atau
-              rekan Anda.
-            </p>
-            <Button className="mt-4" onClick={() => setCreateModalOpen(true)}>
-              <Plus className="mr-1.5 size-4" /> Buat Grup Pertama
-            </Button>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            {/* Group Selection Cards (1 col) */}
-            <div className="space-y-3">
-              <h2 className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                Daftar Grup Anda
-              </h2>
-              {groups.map((grp) => {
-                const isSelected = grp.id === activeGroupId
-                return (
-                  <Card
-                    key={grp.id}
-                    onClick={() => setSelectedGroupId(grp.id)}
-                    className={`cursor-pointer p-4 transition-all ${isSelected
-                        ? 'border-indigo-500 bg-indigo-50/70 dark:border-indigo-500 dark:bg-indigo-950/20'
-                        : 'hover:border-slate-300 dark:hover:border-slate-700'
-                      }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                        {grp.name}
-                      </h3>
-                      <Badge
-                        variant={grp.role === 'OWNER' ? 'default' : 'secondary'}
-                        className="text-[10px]"
-                      >
-                        {grp.role}
-                      </Badge>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                      <span>Dibuat: {formatDate(grp.created_at)}</span>
-                      {grp.code ? (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            copyCode(grp.code)
-                          }}
-                          className="flex items-center gap-1 font-mono text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
-                        >
-                          <Copy className="size-3" />
-                          {grp.code}
-                        </button>
-                      ) : null}
-                    </div>
-                  </Card>
-                )
-              })}
-            </div>
+        {/* Content Area */}
+        {(() => {
+          if (isLoading) {
+            return (
+              <Card className="p-12 text-center text-sm text-slate-500 dark:text-slate-400">
+                Memuat data grup keuangan…
+              </Card>
+            )
+          }
 
-            {/* Active Group Details & Members (2 cols) */}
-            <div className="space-y-4 lg:col-span-2">
-              <Card className="space-y-6 p-6">
-                <div className="flex items-center justify-between border-b border-slate-200 pb-4 dark:border-slate-800">
-                  <div>
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                      Anggota Grup
-                    </h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Daftar anggota yang memiliki akses ke akun bersama di grup
-                      ini.
-                    </p>
-                  </div>
-                  <Badge variant="outline" className="text-xs">
-                    {members.length} Anggota
-                  </Badge>
+          if (groups.length === 0) {
+            return (
+              <Card className="relative overflow-hidden p-12 text-center">
+                <div className="mx-auto mb-4 grid size-16 place-items-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
+                  <Users className="size-8" />
                 </div>
-
-                <div className="divide-y divide-slate-200/80 dark:divide-slate-800/80">
-                  {members.length === 0 ? (
-                    <div className="py-6 text-center text-xs text-slate-500 dark:text-slate-400">
-                      Belum ada data anggota lain di grup ini.
-                    </div>
-                  ) : (
-                    members.map((m) => (
-                      <div
-                        key={m.user_id}
-                        className="flex items-center justify-between py-3"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="grid size-9 place-items-center rounded-xl bg-slate-100 text-sm font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                            {m.name.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                              {m.name}
-                            </p>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                              Bergabung: {formatDate(m.created_at)}
-                            </p>
-                          </div>
-                        </div>
-                        <Badge
-                          variant={m.role === 'OWNER' ? 'default' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {m.role}
-                        </Badge>
-                      </div>
-                    ))
-                  )}
+                <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">
+                  Belum Ada Grup Keuangan
+                </h2>
+                <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                  Buat grup keuangan bersama untuk memantau pengeluaran keluarga atau pasangan secara otomatis tanpa perlu merekap struk secara manual.
+                </p>
+                <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                  <Button onClick={() => setCreateModalOpen(true)} className="gap-1.5">
+                    <Plus className="size-4" /> Buat Grup Pertama
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setJoinModalOpen(true)}
+                    className="gap-1.5"
+                  >
+                    <UserPlus className="size-4 text-indigo-600 dark:text-indigo-400" /> Gabung via Kode
+                  </Button>
                 </div>
               </Card>
+            )
+          }
+
+          return (
+            <div className="space-y-6">
+              {/* Group Switcher Bar (when multiple groups exist) */}
+              {groups.length > 1 && (
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                  <span className="text-xs font-semibold text-slate-400">Grup:</span>
+                  {groups.map((grp) => {
+                    const isSelected = grp.id === activeGroupId
+                    return (
+                      <button
+                        key={grp.id}
+                        type="button"
+                        onClick={() => setSelectedGroupId(grp.id)}
+                        className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all ${isSelected
+                            ? 'bg-indigo-600 text-white shadow-xs'
+                            : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700/60'
+                          }`}
+                      >
+                        <span>{grp.name}</span>
+                        <span
+                          className={`rounded-full px-1.5 py-0.2 text-[9px] ${isSelected
+                              ? 'bg-indigo-700 text-indigo-100'
+                              : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+                            }`}
+                        >
+                          {grp.role}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* Active Group Header Hero Card */}
+              {activeGroup && (
+                <Card className="p-6">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <div className="flex items-center gap-2.5">
+                        <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
+                          {activeGroup.name}
+                        </h2>
+                        <Badge
+                          variant={activeGroup.role === 'OWNER' ? 'default' : 'secondary'}
+                          className="text-xs"
+                        >
+                          {activeGroup.role === 'OWNER' ? 'Pemilik' : 'Anggota'}
+                        </Badge>
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        Grup aktif • Dibuat pada {formatDate(activeGroup.created_at)} •{' '}
+                        {members.length} Anggota terdaftar
+                      </p>
+                    </div>
+
+                    {activeGroup.code && activeGroup.role === 'OWNER' && (
+                      <div className="flex items-center gap-2 rounded-xl border border-indigo-200/80 bg-indigo-50/60 px-3.5 py-2 dark:border-indigo-900/60 dark:bg-indigo-950/40">
+                        <div className="text-left">
+                          <span className="block text-[10px] font-semibold text-indigo-600 uppercase dark:text-indigo-400">
+                            Kode Undangan
+                          </span>
+                          <span className="font-mono text-sm font-extrabold text-indigo-700 dark:text-indigo-300">
+                            {activeGroup.code}
+                          </span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            void navigator.clipboard.writeText(activeGroup.code || '')
+                            toast.info('Kode undangan disalin ke clipboard!')
+                          }}
+                          className="size-8 p-0 text-indigo-600 hover:bg-indigo-100 dark:text-indigo-400 dark:hover:bg-indigo-900/50"
+                          title="Salin Kode"
+                        >
+                          <Share2 className="size-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Workspace Tabs Navigation */}
+                  <div className="mt-6 border-t border-slate-100 pt-5 dark:border-slate-800">
+                    <Tabs value={activeTab} onValueChange={setActiveTab}>
+                      <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+                        <TabsTrigger value="ringkasan" className="gap-2">
+                          <PieChart className="size-4" />
+                          <span>Ringkasan & Kas</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="rekening" className="gap-2">
+                          <CreditCard className="size-4" />
+                          <span>Rekening Bersama</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="anggota" className="gap-2">
+                          <Users className="size-4" />
+                          <span>Anggota & Akses</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="kategori" className="gap-2">
+                          <Layers className="size-4" />
+                          <span>Kategori & Laporan</span>
+                        </TabsTrigger>
+                      </TabsList>
+
+                      {/* Tab 1: Ringkasan & Kolaborasi */}
+                      <TabsContent value="ringkasan" className="mt-6">
+                        <GroupCollaborationView
+                          groupId={activeGroup.id}
+                          members={members}
+                          period={period}
+                          onPeriodChange={setPeriod}
+                        />
+                      </TabsContent>
+
+                      {/* Tab 2: Rekening Bersama */}
+                      <TabsContent value="rekening" className="mt-6">
+                        <GroupAccountsView groupId={activeGroup.id} />
+                      </TabsContent>
+
+                      {/* Tab 3: Anggota & Akses */}
+                      <TabsContent value="anggota" className="mt-6">
+                        <GroupMembersView
+                          groupId={activeGroup.id}
+                          groupName={activeGroup.name}
+                          groupCode={activeGroup.code}
+                          currentRole={activeGroup.role}
+                          onGroupLeft={() => setSelectedGroupId(null)}
+                        />
+                      </TabsContent>
+
+                      {/* Tab 4: Kategori & Laporan */}
+                      <TabsContent value="kategori" className="mt-6">
+                        <GroupCategoriesView
+                          groupId={activeGroup.id}
+                          period={period}
+                        />
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                </Card>
+              )}
             </div>
-          </div>
-        )}
+          )
+        })()}
       </div>
 
       {/* Create Group Dialog */}
@@ -246,21 +329,20 @@ export function GroupsPage() {
           <DialogHeader onClose={() => setCreateModalOpen(false)}>
             <DialogTitle>Buat Grup Keuangan Baru</DialogTitle>
             <DialogDescription>
-              Grup memungkinkan Anda mengelola anggaran bersama dan berbagi akun
-              finansial.
+              Grup memungkinkan Anda mengelola anggaran bersama dan berbagi visibilitas akun finansial dengan pasangan atau keluarga.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3 py-4">
             <label
-              className="text-xs font-medium text-slate-300"
+              className="text-xs font-medium text-slate-700 dark:text-slate-300"
               htmlFor="grp-name"
             >
               Nama Grup
             </label>
             <Input
               id="grp-name"
-              placeholder="Contoh: Keluarga Mafazi, Pasutri Hemat"
+              placeholder="Contoh: Keluarga Cemara, Rumah Tangga Sejahtera"
               value={newGroupName}
               onChange={(e) => setNewGroupName(e.target.value)}
               required
@@ -288,24 +370,24 @@ export function GroupsPage() {
           <DialogHeader onClose={() => setJoinModalOpen(false)}>
             <DialogTitle>Gabung ke Grup via Kode</DialogTitle>
             <DialogDescription>
-              Masukkan 12-karakter kode undangan yang diberikan oleh pemilik
-              grup.
+              Masukkan 12-karakter kode undangan yang diberikan oleh pemilik grup untuk langsung bergabung.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3 py-4">
             <label
-              className="text-xs font-medium text-slate-300"
+              className="text-xs font-medium text-slate-700 dark:text-slate-300"
               htmlFor="join-code"
             >
               Kode Undangan (12 Karakter)
             </label>
             <Input
               id="join-code"
-              placeholder="Contoh: ABC123XYZ789"
+              placeholder="Contoh: A1B2C3D4E5F6"
               maxLength={12}
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              className="font-mono text-base tracking-wider uppercase"
               required
             />
           </div>
@@ -318,8 +400,11 @@ export function GroupsPage() {
             >
               Batal
             </Button>
-            <Button type="submit" disabled={joinGroup.isPending}>
-              {joinGroup.isPending ? 'Bergabung…' : 'Gabung Grup'}
+            <Button
+              type="submit"
+              disabled={joinCode.trim().length !== 12 || joinGroup.isPending}
+            >
+              {joinGroup.isPending ? 'Bergabung…' : 'Gabung ke Grup'}
             </Button>
           </DialogFooter>
         </form>

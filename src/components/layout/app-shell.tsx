@@ -18,11 +18,13 @@ import {
 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { ThemeToggle } from '@/components/common/theme-toggle'
+import { TimezoneToggle } from '@/components/common/timezone-selector'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth'
 import { NotificationDropdown } from '@/features/notifications'
 import { TransactionFormDialog } from '@/features/transactions/components/transaction-form-dialog'
 import { TransferFormDialog } from '@/features/transactions/components/transfer-form-dialog'
+import { useTimezone } from '@/hooks/use-timezone'
 
 interface AppShellProps {
   readonly children: ReactNode
@@ -42,6 +44,7 @@ const NAV_ITEMS = [
 
 export function AppShell({ children, onLogout }: AppShellProps) {
   const { user, logout } = useAuth()
+  const { timezone } = useTimezone()
   const routerState = useRouterState()
   const currentPath = routerState.location.pathname
 
@@ -165,6 +168,7 @@ export function AppShell({ children, onLogout }: AppShellProps) {
           </span>
         </div>
         <div className="flex items-center gap-2">
+          <TimezoneToggle size="sm" showLabel={false} />
           <ThemeToggle size="sm" />
           <NotificationDropdown />
           <Button
@@ -257,6 +261,7 @@ export function AppShell({ children, onLogout }: AppShellProps) {
           <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
             <span>
               {new Intl.DateTimeFormat('id-ID', {
+                timeZone: timezone,
                 weekday: 'long',
                 day: 'numeric',
                 month: 'short',
@@ -264,6 +269,7 @@ export function AppShell({ children, onLogout }: AppShellProps) {
               }).format(new Date())}
             </span>
             <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
+            <TimezoneToggle size="sm" />
             <ThemeToggle size="sm" />
             <NotificationDropdown />
           </div>

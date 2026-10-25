@@ -27,6 +27,9 @@ import { useCategories } from '@/features/categories'
 import { parseCurrency, sanitizeCurrency } from '@/lib/currency'
 import { formatRupiah } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
+import { InlineTimezoneSelect } from '@/components/common/timezone-selector'
+import { useTimezone } from '@/hooks/use-timezone'
+import { fromDatetimeLocalValue, toDatetimeLocalValue } from '@/lib/timezone'
 import { useCreateTransaction } from '../hooks/use-transactions'
 
 interface TransactionFormDialogProps {
@@ -489,12 +492,16 @@ function TransactionFormInner({
   initialType,
   onClose,
 }: TransactionFormInnerProps) {
+  const { timezone } = useTimezone()
+  const [formTimezone, setFormTimezone] = useState(timezone)
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>(initialType)
   const [accountId, setAccountId] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 16))
+  const [date, setDate] = useState(() =>
+    toDatetimeLocalValue(new Date(), timezone),
+  )
   const [error, setError] = useState<string | null>(null)
 
   const { data: accounts = [] } = useAccounts()
@@ -580,6 +587,14 @@ function TransactionFormInner({
     setCategoryId('')
   }
 
+  function handleTimezoneChange(nextTz: string) {
+    if (date) {
+      const utc = fromDatetimeLocalValue(date, formTimezone)
+      setDate(toDatetimeLocalValue(utc, nextTz))
+    }
+    setFormTimezone(nextTz)
+  }
+
   function handleAddAmount(delta: number) {
     const current = parseCurrency(amount)
     const next = current + delta
@@ -590,7 +605,7 @@ function TransactionFormInner({
     setAmount('')
     setDescription('')
     setError(null)
-    setDate(new Date().toISOString().slice(0, 16))
+    setDate(toDatetimeLocalValue(new Date(), formTimezone))
   }
 
   async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
@@ -618,7 +633,7 @@ function TransactionFormInner({
         category_id: selectedCategory,
         type,
         amount: sanitizeCurrency(amount, { toFixed: 2 }),
-        transacted_at: new Date(date).toISOString(),
+        transacted_at: fromDatetimeLocalValue(date, formTimezone),
         description: description.trim() || null,
       })
       resetForm()
@@ -692,15 +707,23 @@ function TransactionFormInner({
         {/* Date & Time */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
-            <label
-              className="font-medium text-slate-700 dark:text-slate-300"
-              htmlFor="tx-date"
-            >
-              Tanggal & Waktu
-            </label>
+            <div className="flex items-center gap-2">
+              <label
+                className="font-medium text-slate-700 dark:text-slate-300"
+                htmlFor="tx-date"
+              >
+                Tanggal & Waktu
+              </label>
+              <InlineTimezoneSelect
+                value={formTimezone}
+                onChange={handleTimezoneChange}
+              />
+            </div>
             <button
               type="button"
-              onClick={() => setDate(new Date().toISOString().slice(0, 16))}
+              onClick={() =>
+                setDate(toDatetimeLocalValue(new Date(), formTimezone))
+              }
               className="flex items-center gap-1 text-[11px] font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
             >
               <Clock className="size-3" />

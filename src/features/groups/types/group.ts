@@ -21,6 +21,59 @@ export interface GroupMemberDto {
   created_at: string
 }
 
+export interface GroupSharedAccountDto {
+  id: string
+  group_id: string
+  account_id: string
+  name: string
+}
+
+export interface GroupCategoryDto {
+  id: string
+  group_id: string
+  name: string
+  type: 'INCOME' | 'EXPENSE'
+  created_at: string
+}
+
+export interface GroupCategoryMappingDto {
+  id: string
+  group_id: string
+  group_category_id: string
+  user_category_id: string
+}
+
+export interface CollaborationBalance {
+  currency: string
+  balance: string
+}
+
+export interface MemberContribution {
+  user_id: string
+  currency: string
+  income: string
+  expense: string
+}
+
+export interface CollaborationFeedItem {
+  id: string
+  user_id: string
+  currency: string
+  amount: string
+  type: string
+  category: string
+  transacted_at: string
+}
+
+export interface CollaborationDto {
+  period: string
+  page: number
+  limit: number
+  balances: CollaborationBalance[]
+  contributions: MemberContribution[]
+  feed: CollaborationFeedItem[]
+}
+
 export interface GroupReportCategoryItem {
   group_category_id: string
   name: string
@@ -40,4 +93,14 @@ export interface CreateGroupInput {
 
 export interface JoinGroupInput {
   code: string
+}
+
+export interface MembershipActionInput {
+  user_id: string
+  action: 'REMOVE' | 'TRANSFER_OWNER'
+}
+
+export interface CreateGroupCategoryInput {
+  name: string
+  type: 'INCOME' | 'EXPENSE'
 }

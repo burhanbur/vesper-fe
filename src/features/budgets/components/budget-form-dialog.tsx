@@ -15,6 +15,8 @@ import { useCategories } from '@/features/categories'
 import { parseCurrency, sanitizeCurrency } from '@/lib/currency'
 import { useCreateBudget, useUpdateBudget } from '../hooks/use-budgets'
 import type { BudgetDto, PeriodType } from '../types/budget'
+import { toDateInputValue } from '@/lib/timezone'
+import { useTimezone } from '@/hooks/use-timezone'
 
 interface BudgetFormDialogProps {
   readonly open: boolean
@@ -27,11 +29,10 @@ export function BudgetFormDialog({
   onOpenChange,
   budgetToEdit,
 }: BudgetFormDialogProps) {
+  const { timezone } = useTimezone()
   const isEdit = Boolean(budgetToEdit)
 
-  const [categoryId, setCategoryId] = useState(
-    budgetToEdit?.category_id ?? '',
-  )
+  const [categoryId, setCategoryId] = useState(budgetToEdit?.category_id ?? '')
   const [amount, setAmount] = useState(
     budgetToEdit?.current_amount
       ? String(Math.round(parseFloat(budgetToEdit.current_amount)))
@@ -41,8 +42,7 @@ export function BudgetFormDialog({
     budgetToEdit?.period_type ?? 'MONTHLY',
   )
   const [anchorDate, setAnchorDate] = useState(
-    budgetToEdit?.anchor_date ??
-      (() => new Date().toISOString().slice(0, 10)),
+    budgetToEdit?.anchor_date ?? (() => toDateInputValue(new Date(), timezone)),
   )
   const [description, setDescription] = useState(
     budgetToEdit?.description ?? '',
@@ -114,7 +114,9 @@ export function BudgetFormDialog({
         <DialogHeader onClose={() => onOpenChange(false)}>
           <DialogTitle className="flex items-center gap-2">
             <Target className="size-5 text-indigo-600 dark:text-indigo-400" />
-            {isEdit ? 'Edit Alokasi Anggaran' : 'Buat Alokasi Anggaran (Budget)'}
+            {isEdit
+              ? 'Edit Alokasi Anggaran'
+              : 'Buat Alokasi Anggaran (Budget)'}
           </DialogTitle>
           <DialogDescription>
             {isEdit
@@ -149,7 +151,8 @@ export function BudgetFormDialog({
                 className="bg-slate-100 text-slate-500 dark:bg-slate-800/60 dark:text-slate-400"
               />
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Kategori dan jadwal terkunci untuk menjaga konsistensi audit riwayat anggaran.
+                Kategori dan jadwal terkunci untuk menjaga konsistensi audit
+                riwayat anggaran.
               </p>
             </div>
           ) : (
@@ -257,11 +260,7 @@ export function BudgetFormDialog({
           >
             Batal
           </Button>
-          <Button
-            type="submit"
-            variant="default"
-            disabled={isPending}
-          >
+          <Button type="submit" variant="default" disabled={isPending}>
             {isPending
               ? 'Menyimpan…'
               : isEdit

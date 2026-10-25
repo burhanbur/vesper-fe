@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import {
+  Check,
   KeyRound,
   Monitor,
   Moon,
@@ -50,12 +51,19 @@ import {
 import type { CategoryType } from '@/features/categories/types/category'
 import { useDevices, useProfile, useUpdateProfile } from '@/features/profile'
 import { useTheme } from '@/hooks/use-theme'
+import { useTimezone } from '@/hooks/use-timezone'
 import { formatDateTime } from '@/lib/formatters'
+import { SUPPORTED_TIMEZONES } from '@/lib/timezone'
 import { cn } from '@/lib/utils'
 
 export function SettingsPage() {
   const navigate = useNavigate()
   const { theme, setTheme } = useTheme()
+  const {
+    timezone,
+    setTimezone,
+    activeOption: activeTimezoneOption,
+  } = useTimezone()
   const [activeTab, setActiveTab] = useState('profile')
 
   // Profile state
@@ -333,6 +341,68 @@ export function SettingsPage() {
                         </p>
                       </div>
                     </button>
+                  </div>
+                </div>
+
+                <div className="h-px bg-slate-200 dark:bg-slate-800" />
+
+                {/* Timezone Selector */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        Zona Waktu (Timezone)
+                      </span>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Default zona waktu transaksi dan laporan keuangan Anda.
+                      </p>
+                    </div>
+                    <span className="rounded-md border border-indigo-500/20 bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400">
+                      Aktif: {activeTimezoneOption.code} (
+                      {activeTimezoneOption.offsetLabel})
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2.5 pt-1 sm:grid-cols-2">
+                    {SUPPORTED_TIMEZONES.map((option) => {
+                      const isSelected = timezone === option.value
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setTimezone(option.value)}
+                          className={cn(
+                            'flex cursor-pointer items-start justify-between rounded-xl border p-3 text-left transition-all',
+                            isSelected
+                              ? 'border-indigo-600 bg-indigo-50 text-indigo-950 ring-2 ring-indigo-500/20 dark:bg-indigo-950/40 dark:text-indigo-200'
+                              : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-800/60',
+                          )}
+                        >
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                                {option.label}
+                              </span>
+                              <span
+                                className={cn(
+                                  'rounded-md px-1.5 py-0.5 text-[10px] font-bold',
+                                  isSelected
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+                                )}
+                              >
+                                {option.offsetLabel}
+                              </span>
+                            </div>
+                            <p className="text-[11px] leading-tight text-slate-500 dark:text-slate-400">
+                              {option.description}
+                            </p>
+                          </div>
+                          {isSelected && (
+                            <Check className="size-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                          )}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
 
@@ -642,11 +712,10 @@ export function SettingsPage() {
                           onClick={() =>
                             void handleToggleApiKey(key.id, key.is_active)
                           }
-                          className={`text-xs ${
-                            key.is_active
+                          className={`text-xs ${key.is_active
                               ? 'text-amber-500 hover:bg-amber-500/10 hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300'
                               : 'text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300'
-                          }`}
+                            }`}
                         >
                           <Power className="mr-1 size-3.5" />
                           {key.is_active ? 'Nonaktifkan' : 'Aktifkan'}

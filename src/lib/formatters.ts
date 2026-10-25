@@ -1,3 +1,5 @@
+import { getActiveTimezone } from './timezone'
+
 /**
  * Indonesian Rupiah formatter
  */
@@ -36,12 +38,16 @@ export function formatNumber(
 /**
  * Format ISO date string to localized Indonesian display
  */
-export function formatDate(dateString: string | null | undefined): string {
+export function formatDate(
+  dateString: string | null | undefined,
+  timeZone: string = getActiveTimezone(),
+): string {
   if (!dateString) return '-'
   try {
     const d = new Date(dateString)
     if (Number.isNaN(d.getTime())) return dateString
     return new Intl.DateTimeFormat('id-ID', {
+      timeZone,
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -54,12 +60,16 @@ export function formatDate(dateString: string | null | undefined): string {
 /**
  * Format ISO datetime string to localized Indonesian display with time
  */
-export function formatDateTime(dateString: string | null | undefined): string {
+export function formatDateTime(
+  dateString: string | null | undefined,
+  timeZone: string = getActiveTimezone(),
+): string {
   if (!dateString) return '-'
   try {
     const d = new Date(dateString)
     if (Number.isNaN(d.getTime())) return dateString
     return new Intl.DateTimeFormat('id-ID', {
+      timeZone,
       day: 'numeric',
       month: 'short',
       year: 'numeric',
