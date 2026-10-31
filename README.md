@@ -18,6 +18,12 @@ A production-oriented, beginner-maintainable React SPA foundation with strict Ty
 
 The backend login response must include `access_token` and `refresh_token`. Protected requests use the access Bearer token; refresh sends the refresh JWT in the JSON body.
 
+## Docker
+
+A multi-stage `Dockerfile` and `docker-compose.yml` are included for production static hosting with non-root Nginx. Set `VITE_API_BASE_URL` to the public backend URL (including `/api/v1`) when building. The default host binding is `127.0.0.1:8080`, intended for an HTTPS reverse proxy.
+
+See [Docker deployment](docs/deployment.md#docker-deployment) for build/start commands, configuration, backend connectivity, and health checks. Vite configuration is embedded at build time; no secrets belong in these values.
+
 ## Stack
 
 - React, TypeScript, Vite, and Tailwind CSS
