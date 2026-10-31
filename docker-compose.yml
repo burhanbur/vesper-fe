@@ -12,6 +12,8 @@ services:
     restart: unless-stopped
     ports:
       - '${WEB_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-5173}:8080'
+    env_file:
+      - .env.production
     security_opt:
       - no-new-privileges:true
     cap_drop:
