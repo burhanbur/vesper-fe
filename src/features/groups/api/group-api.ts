@@ -8,9 +8,12 @@ import type {
   GroupCategoryMappingDto,
   GroupDto,
   GroupMemberDto,
+  GroupPocketDto,
   GroupReportDto,
   GroupSharedAccountDto,
   MembershipActionInput,
+  CreateGroupPocketInput,
+  UpdateGroupPocketInput,
 } from '../types/group'
 
 export async function fetchGroups(): Promise<GroupDto[]> {
@@ -171,4 +174,67 @@ export async function fetchGroupReport(
     { params: { period } },
   )
   return response.data.data
+}
+
+export async function fetchGroupPockets(
+  groupId: string,
+): Promise<GroupPocketDto[]> {
+  const response = await apiClient.get<ApiResponse<GroupPocketDto[]>>(
+    `/groups/${groupId}/pockets`,
+  )
+  return response.data.data
+}
+
+export async function createGroupPocket(
+  groupId: string,
+  input: CreateGroupPocketInput,
+): Promise<GroupPocketDto> {
+  const response = await apiClient.post<ApiResponse<GroupPocketDto>>(
+    `/groups/${groupId}/pockets`,
+    input,
+  )
+  return response.data.data
+}
+
+export async function updateGroupPocket(
+  groupId: string,
+  pocketId: string,
+  input: UpdateGroupPocketInput,
+): Promise<GroupPocketDto> {
+  const response = await apiClient.patch<ApiResponse<GroupPocketDto>>(
+    `/groups/${groupId}/pockets/${pocketId}`,
+    input,
+  )
+  return response.data.data
+}
+
+export async function deleteGroupPocket(
+  groupId: string,
+  pocketId: string,
+): Promise<void> {
+  await apiClient.delete<ApiResponse<null>>(
+    `/groups/${groupId}/pockets/${pocketId}`,
+  )
+}
+
+export async function assignAccountToGroupPocket(
+  groupId: string,
+  pocketId: string,
+  accountId: string,
+): Promise<void> {
+  await apiClient.post<ApiResponse<null>>(
+    `/groups/${groupId}/pockets/${pocketId}/accounts`,
+    { account_id: accountId },
+  )
+}
+
+export async function unassignAccountFromGroupPocket(
+  groupId: string,
+  pocketId: string,
+  accountId: string,
+): Promise<void> {
+  await apiClient.delete<ApiResponse<null>>(
+    `/groups/${groupId}/pockets/${pocketId}/accounts`,
+    { data: { account_id: accountId } },
+  )
 }

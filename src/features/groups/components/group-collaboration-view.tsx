@@ -4,19 +4,18 @@ import {
     Calendar,
     ChevronLeft,
     ChevronRight,
-    CreditCard,
     ReceiptText,
-    TrendingDown,
-    TrendingUp,
+    ShieldAlert,
     Users,
+    Wallet,
 } from 'lucide-react'
+import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
 import { useGroupCollaboration } from '../hooks/use-groups'
 import type { GroupMemberDto } from '../types/group'
-import { formatDate, formatNumber, formatRupiah } from '@/lib/formatters'
+import { formatDateTime, formatNumber, formatRupiah } from '@/lib/formatters'
 
 interface GroupCollaborationViewProps {
     readonly groupId: string
@@ -25,21 +24,38 @@ interface GroupCollaborationViewProps {
     readonly onPeriodChange: (period: string) => void
 }
 
+function formatAccountBalance(
+    balance: number | string | undefined,
+    currency: string,
+): string {
+    if (balance === undefined || balance === null || balance === '') {
+        return '0'
+    }
+    if (currency === 'IDR') {
+        return formatRupiah(balance)
+    }
+    return `${currency} ${formatNumber(balance)}`
+}
+
 export function GroupCollaborationView({
     groupId,
     members,
     period,
     onPeriodChange,
 }: GroupCollaborationViewProps) {
+    const [page, setPage] = useState(1)
+
     const { data: collaboration, isLoading } = useGroupCollaboration(
         groupId,
         period,
+        page,
     )
 
     const memberMap = new Map(members.map((m) => [m.user_id, m]))
 
     // Helper for changing months
     function adjustMonth(delta: number) {
+        setPage(1)
         const [yearStr, monthStr] = period.split('-')
         const year = Number.parseInt(yearStr || '2026', 10)
         const month = Number.parseInt(monthStr || '1', 10) - 1
@@ -49,16 +65,9 @@ export function GroupCollaborationView({
         onPeriodChange(`${nextY}-${nextM}`)
     }
 
-    // Calculate totals
-    const totalIncome = (collaboration?.contributions || []).reduce(
-        (acc, c) => acc + (Number.parseFloat(c.income) || 0),
-        0,
-    )
-    const totalExpense = (collaboration?.contributions || []).reduce(
-        (acc, c) => acc + (Number.parseFloat(c.expense) || 0),
-        0,
-    )
-    const netFlow = totalIncome - totalExpense
+    const hasBalances = (collaboration?.balances || []).length > 0
+    const contributions = collaboration?.contributions || []
+    const feed = collaboration?.feed || []
 
     return (
         <div className="space-y-6">
@@ -87,6 +96,7 @@ export function GroupCollaborationView({
                         variant="outline"
                         size="sm"
                         onClick={() => {
+                            setPage(1)
                             const now = new Date()
                             const ym = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`
                             onPeriodChange(ym)
@@ -106,200 +116,143 @@ export function GroupCollaborationView({
                 </div>
             </div>
 
+            {/* Informational banner matching mobile */}
+            <div className="flex items-start gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4 dark:border-indigo-900/40 dark:bg-indigo-950/20">
+                <ShieldAlert className="size-5 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                <div className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    <p className="font-semibold text-slate-900 dark:text-white">
+                        Kolaborasi Kas Bersama Online
+                    </p>
+                    <p className="mt-0.5">
+                        Saldo akun CASH yang dibagikan, per mata uang. Kontribusi = pemasukan/pengeluaran
+                        berkategori terpetakan pada bulan acuan server terpilih, bukan utang atau setoran anggota.
+                        Transfer dan investasi tidak dihitung.
+                    </p>
+                </div>
+            </div>
+
             {isLoading ? (
                 <Card className="p-8 text-center text-sm text-slate-500 dark:text-slate-400">
                     Memuat ringkasan keuangan bersama…
                 </Card>
             ) : (
                 <>
-                    {/* Highlight Stat Cards */}
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        {/* Pooled Cash Balance */}
-                        <Card className="relative overflow-hidden p-5">
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                                    Total Kas Bersama
-                                </span>
-                                <div className="grid size-8 place-items-center rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
-                                    <CreditCard className="size-4" />
-                                </div>
-                            </div>
-                            <div className="mt-3">
-                                {collaboration?.balances && collaboration.balances.length > 0 ? (
-                                    collaboration.balances.map((b) => (
-                                        <p
-                                            key={b.currency}
-                                            className="text-xl font-extrabold text-slate-900 dark:text-white"
-                                        >
-                                            {b.currency === 'IDR'
-                                                ? formatRupiah(b.balance)
-                                                : `${b.currency} ${formatNumber(b.balance)}`}
-                                        </p>
-                                    ))
-                                ) : (
-                                    <p className="text-xl font-extrabold text-slate-900 dark:text-white">
-                                        Rp 0
-                                    </p>
-                                )}
-                                <span className="mt-1 block text-[11px] text-slate-400">
-                                    Saldo rekening gabungan
-                                </span>
-                            </div>
-                        </Card>
-
-                        {/* Total Shared Income */}
-                        <Card className="relative overflow-hidden p-5">
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                                    Pemasukan Gabungan
-                                </span>
-                                <div className="grid size-8 place-items-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
-                                    <TrendingUp className="size-4" />
-                                </div>
-                            </div>
-                            <div className="mt-3">
-                                <p className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
-                                    {formatRupiah(totalIncome)}
+                    {/* Saldo Kas Bersama (Per Currency, No Fake Unified Totals) */}
+                    <div>
+                        <div className="mb-3 flex items-center gap-2">
+                            <Wallet className="size-5 text-indigo-600 dark:text-indigo-400" />
+                            <div>
+                                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                                    Saldo Kas Bersama
+                                </h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                    Saldo akun kas yang dibagikan oleh anggota grup per mata uang
                                 </p>
-                                <span className="mt-1 block text-[11px] text-slate-400">
-                                    Bulan {period}
-                                </span>
                             </div>
-                        </Card>
+                        </div>
 
-                        {/* Total Shared Expense */}
-                        <Card className="relative overflow-hidden p-5">
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                                    Pengeluaran Gabungan
-                                </span>
-                                <div className="grid size-8 place-items-center rounded-lg bg-rose-100 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400">
-                                    <TrendingDown className="size-4" />
-                                </div>
+                        {!hasBalances ? (
+                            <Card className="p-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                                Tidak ada saldo kas dibagikan.
+                            </Card>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                {collaboration?.balances.map((b) => (
+                                    <Card
+                                        key={b.currency}
+                                        className="flex items-center justify-between p-5 border border-indigo-100 bg-gradient-to-br from-indigo-50/50 to-white dark:border-slate-800 dark:from-slate-900/50 dark:to-slate-900"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="grid size-10 place-items-center rounded-xl bg-white shadow-xs dark:bg-slate-800 text-indigo-600 dark:text-indigo-400">
+                                                <Wallet className="size-5" />
+                                            </div>
+                                            <div>
+                                                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                                                    Kas ({b.currency})
+                                                </span>
+                                                <p className="text-xl font-extrabold text-slate-900 dark:text-white">
+                                                    {formatAccountBalance(b.balance, b.currency)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Badge variant="outline" className="text-[10px]">
+                                            {b.currency}
+                                        </Badge>
+                                    </Card>
+                                ))}
                             </div>
-                            <div className="mt-3">
-                                <p className="text-xl font-extrabold text-rose-600 dark:text-rose-400">
-                                    {formatRupiah(totalExpense)}
-                                </p>
-                                <span className="mt-1 block text-[11px] text-slate-400">
-                                    Bulan {period}
-                                </span>
-                            </div>
-                        </Card>
-
-                        {/* Net Cashflow */}
-                        <Card className="relative overflow-hidden p-5">
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                                    Arus Kas Bersih
-                                </span>
-                                <div
-                                    className={`grid size-8 place-items-center rounded-lg ${netFlow >= 0
-                                            ? 'bg-blue-100 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400'
-                                            : 'bg-amber-100 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400'
-                                        }`}
-                                >
-                                    {netFlow >= 0 ? (
-                                        <ArrowUpRight className="size-4" />
-                                    ) : (
-                                        <ArrowDownRight className="size-4" />
-                                    )}
-                                </div>
-                            </div>
-                            <div className="mt-3">
-                                <p
-                                    className={`text-xl font-extrabold ${netFlow >= 0
-                                            ? 'text-blue-600 dark:text-blue-400'
-                                            : 'text-amber-600 dark:text-amber-400'
-                                        }`}
-                                >
-                                    {formatRupiah(netFlow)}
-                                </p>
-                                <span className="mt-1 block text-[11px] text-slate-400">
-                                    {netFlow >= 0 ? 'Surplus kas' : 'Defisit kas'}
-                                </span>
-                            </div>
-                        </Card>
+                        )}
                     </div>
 
-                    {/* Member Contributions */}
+                    {/* Member Contributions (Per Member, Per Currency, No Fake Total Expense/Percentages) */}
                     <Card className="p-6">
                         <div className="flex items-center justify-between border-b border-slate-200 pb-4 dark:border-slate-800">
                             <div className="flex items-center gap-2">
                                 <Users className="size-5 text-indigo-600 dark:text-indigo-400" />
-                                <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                                    Kontribusi Tiap Anggota (Bulan Ini)
-                                </h3>
+                                <div>
+                                    <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                                        Kontribusi Bulanan (Halaman Ini)
+                                    </h3>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                                        Pemasukan dan pengeluaran berkategori terpetakan per anggota pada periode {period}
+                                    </p>
+                                </div>
                             </div>
-                            <span className="text-xs text-slate-400">
-                                Pemasukan vs Pengeluaran per Akun Terhubung
-                            </span>
+                            <Badge variant="outline" className="text-xs">
+                                {contributions.length} Catatan
+                            </Badge>
                         </div>
 
-                        <div className="mt-4 space-y-4">
-                            {(!collaboration?.contributions ||
-                                collaboration.contributions.length === 0) && (
-                                    <div className="py-6 text-center text-xs text-slate-500 dark:text-slate-400">
-                                        Belum ada catatan kontribusi pengeluaran atau pemasukan untuk
-                                        bulan {period}.
-                                    </div>
-                                )}
+                        <div className="mt-4 space-y-3">
+                            {contributions.length === 0 && (
+                                <div className="py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                                    Belum ada catatan kontribusi pengeluaran atau pemasukan untuk bulan {period}.
+                                </div>
+                            )}
 
-                            {collaboration?.contributions?.map((c) => {
+                            {contributions.map((c) => {
                                 const member = memberMap.get(c.user_id)
                                 const name = member?.name || `Anggota (${c.user_id.slice(0, 6)})`
-                                const inc = Number.parseFloat(c.income) || 0
-                                const exp = Number.parseFloat(c.expense) || 0
-                                const expensePercentage =
-                                    totalExpense > 0 ? Math.round((exp / totalExpense) * 100) : 0
 
                                 return (
                                     <div
                                         key={`${c.user_id}-${c.currency}`}
-                                        className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 dark:border-slate-800/80 dark:bg-slate-900/40"
+                                        className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-slate-50/50 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800/80 dark:bg-slate-900/40"
                                     >
-                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className="grid size-8 place-items-center rounded-lg bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                                                    {name.slice(0, 2).toUpperCase()}
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-bold text-slate-900 dark:text-white">
-                                                        {name}
-                                                    </p>
-                                                    <span className="text-[11px] text-slate-400">
-                                                        Porsi Pengeluaran Grup: {expensePercentage}%
-                                                    </span>
-                                                </div>
+                                        <div className="flex items-center gap-3">
+                                            <div className="grid size-9 place-items-center rounded-lg bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                                                {name.slice(0, 2).toUpperCase()}
                                             </div>
-
-                                            <div className="flex items-center gap-6">
-                                                <div className="text-right">
-                                                    <span className="block text-[11px] text-emerald-600 dark:text-emerald-400">
-                                                        + {formatRupiah(inc)}
-                                                    </span>
-                                                    <span className="text-[10px] text-slate-400">
-                                                        Pemasukan
-                                                    </span>
-                                                </div>
-                                                <div className="text-right">
-                                                    <span className="block text-[11px] font-semibold text-rose-600 dark:text-rose-400">
-                                                        - {formatRupiah(exp)}
-                                                    </span>
-                                                    <span className="text-[10px] text-slate-400">
-                                                        Pengeluaran
-                                                    </span>
-                                                </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-900 dark:text-white">
+                                                    {name}
+                                                </p>
+                                                <span className="text-[11px] text-slate-400">
+                                                    ID: {c.user_id.slice(0, 8)}…
+                                                </span>
                                             </div>
                                         </div>
 
-                                        <div className="mt-3">
-                                            <Progress
-                                                value={expensePercentage}
-                                                max={100}
-                                                className="h-1.5"
-                                                indicatorClassName="bg-rose-500"
-                                            />
+                                        <div className="flex items-center gap-4 sm:gap-6">
+                                            <Badge variant="secondary" className="text-[10px]">
+                                                {c.currency}
+                                            </Badge>
+                                            <div className="rounded-lg bg-emerald-50 px-3 py-1.5 text-right dark:bg-emerald-950/40">
+                                                <span className="block text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                                                    + {formatAccountBalance(c.income, c.currency)}
+                                                </span>
+                                                <span className="text-[10px] text-slate-400">
+                                                    Masuk
+                                                </span>
+                                            </div>
+                                            <div className="rounded-lg bg-rose-50 px-3 py-1.5 text-right dark:bg-rose-950/40">
+                                                <span className="block text-xs font-bold text-rose-600 dark:text-rose-400">
+                                                    - {formatAccountBalance(c.expense, c.currency)}
+                                                </span>
+                                                <span className="text-[10px] text-slate-400">
+                                                    Keluar
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 )
@@ -312,23 +265,28 @@ export function GroupCollaborationView({
                         <div className="flex items-center justify-between border-b border-slate-200 pb-4 dark:border-slate-800">
                             <div className="flex items-center gap-2">
                                 <ReceiptText className="size-5 text-indigo-600 dark:text-indigo-400" />
-                                <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                                    Aktivitas Transaksi Rekening Bersama
-                                </h3>
+                                <div>
+                                    <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                                        Aktivitas Transaksi Rekening Bersama
+                                    </h3>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                                        Mutasi akun bersama (tanpa catatan pribadi)
+                                    </p>
+                                </div>
                             </div>
                             <Badge variant="outline" className="text-xs">
-                                {collaboration?.feed?.length || 0} Transaksi
+                                {feed.length} Transaksi
                             </Badge>
                         </div>
 
                         <div className="mt-4 divide-y divide-slate-100 dark:divide-slate-800/80">
-                            {(!collaboration?.feed || collaboration.feed.length === 0) && (
+                            {feed.length === 0 && (
                                 <div className="py-8 text-center text-xs text-slate-500 dark:text-slate-400">
                                     Belum ada transaksi di akun bersama pada periode {period}.
                                 </div>
                             )}
 
-                            {collaboration?.feed?.map((item) => {
+                            {feed.map((item) => {
                                 const member = memberMap.get(item.user_id)
                                 const isExpense = item.type === 'EXPENSE'
                                 const memberName =
@@ -342,8 +300,8 @@ export function GroupCollaborationView({
                                         <div className="flex items-center gap-3">
                                             <div
                                                 className={`grid size-9 place-items-center rounded-xl ${isExpense
-                                                        ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400'
-                                                        : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
+                                                    ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400'
+                                                    : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
                                                     }`}
                                             >
                                                 {isExpense ? (
@@ -362,7 +320,7 @@ export function GroupCollaborationView({
                                                     </span>
                                                 </div>
                                                 <p className="text-[11px] text-slate-400">
-                                                    {formatDate(item.transacted_at)}
+                                                    {formatDateTime(item.transacted_at)}
                                                 </p>
                                             </div>
                                         </div>
@@ -370,11 +328,11 @@ export function GroupCollaborationView({
                                         <div className="text-right">
                                             <p
                                                 className={`text-sm font-bold ${isExpense
-                                                        ? 'text-rose-600 dark:text-rose-400'
-                                                        : 'text-emerald-600 dark:text-emerald-400'
+                                                    ? 'text-rose-600 dark:text-rose-400'
+                                                    : 'text-emerald-600 dark:text-emerald-400'
                                                     }`}
                                             >
-                                                {isExpense ? '-' : '+'} {formatRupiah(item.amount)}
+                                                {isExpense ? '-' : '+'} {formatAccountBalance(item.amount, item.currency)}
                                             </p>
                                             <span className="text-[10px] text-slate-400">
                                                 {item.currency}
@@ -385,6 +343,31 @@ export function GroupCollaborationView({
                             })}
                         </div>
                     </Card>
+
+                    {/* Pagination Toolbar */}
+                    <div className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900/60">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            disabled={page <= 1}
+                            className="gap-1 text-xs"
+                        >
+                            <ChevronLeft className="size-4" /> Halaman Sebelumnya
+                        </Button>
+                        <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                            Halaman {page}
+                        </span>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage((p) => p + 1)}
+                            disabled={feed.length < 20 && contributions.length < 20}
+                            className="gap-1 text-xs"
+                        >
+                            Halaman Berikutnya <ChevronRight className="size-4" />
+                        </Button>
+                    </div>
                 </>
             )}
         </div>

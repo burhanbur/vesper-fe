@@ -104,3 +104,35 @@ export interface CreateGroupCategoryInput {
   name: string
   type: 'INCOME' | 'EXPENSE'
 }
+
+export interface PocketBalance {
+  currency: string
+  balance: string
+}
+
+export interface PocketAccount {
+  account_id: string
+  name: string
+  owner_user_id: string
+  owner_name: string
+  currency: string
+  balance: string
+}
+
+export interface GroupPocketDto {
+  id: string
+  name: string
+  description: string | null
+  balances: PocketBalance[]
+  accounts: PocketAccount[]
+}
+
+export interface CreateGroupPocketInput {
+  name: string
+  description?: string | undefined
+}
+
+export interface UpdateGroupPocketInput {
+  name?: string | undefined
+  description?: string | null | undefined
+}

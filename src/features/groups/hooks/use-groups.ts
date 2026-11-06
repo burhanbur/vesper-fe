@@ -1,12 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  assignAccountToGroupPocket,
   createGroup,
   createGroupCategory,
+  createGroupPocket,
   deleteGroupCategory,
+  deleteGroupPocket,
   fetchGroupCategories,
   fetchGroupCategoryMappings,
   fetchGroupCollaboration,
   fetchGroupMembers,
+  fetchGroupPockets,
   fetchGroupReport,
   fetchGroups,
   fetchSharedAccounts,
@@ -14,13 +18,17 @@ import {
   manageGroupMembership,
   mapCategoryToGroupCategory,
   shareAccountWithGroup,
+  unassignAccountFromGroupPocket,
   unmapCategoryFromGroupCategory,
   unshareAccountFromGroup,
+  updateGroupPocket,
 } from '../api/group-api'
 import type {
   CreateGroupCategoryInput,
   CreateGroupInput,
+  CreateGroupPocketInput,
   MembershipActionInput,
+  UpdateGroupPocketInput,
 } from '../types/group'
 
 export const groupKeys = {
@@ -29,6 +37,7 @@ export const groupKeys = {
   collaboration: (id: string, period: string, page = 1) =>
     [...groupKeys.all, 'collaboration', id, period, page] as const,
   accounts: (id: string) => [...groupKeys.all, 'accounts', id] as const,
+  pockets: (id: string) => [...groupKeys.all, 'pockets', id] as const,
   categories: (id: string) => [...groupKeys.all, 'categories', id] as const,
   categoryMappings: (id: string) =>
     [...groupKeys.all, 'category-mappings', id] as const,
@@ -270,6 +279,116 @@ export function useUnmapCategory() {
       })
       void queryClient.invalidateQueries({
         queryKey: [...groupKeys.all, 'collaboration', groupId],
+      })
+    },
+  })
+}
+
+export function useGroupPockets(groupId: string) {
+  return useQuery({
+    queryKey: groupKeys.pockets(groupId),
+    queryFn: () => fetchGroupPockets(groupId),
+    enabled: Boolean(groupId),
+  })
+}
+
+export function useCreateGroupPocket() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      groupId,
+      input,
+    }: {
+      groupId: string
+      input: CreateGroupPocketInput
+    }) => createGroupPocket(groupId, input),
+    onSuccess: (_, { groupId }) => {
+      void queryClient.invalidateQueries({
+        queryKey: groupKeys.pockets(groupId),
+      })
+    },
+  })
+}
+
+export function useUpdateGroupPocket() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      groupId,
+      pocketId,
+      input,
+    }: {
+      groupId: string
+      pocketId: string
+      input: UpdateGroupPocketInput
+    }) => updateGroupPocket(groupId, pocketId, input),
+    onSuccess: (_, { groupId }) => {
+      void queryClient.invalidateQueries({
+        queryKey: groupKeys.pockets(groupId),
+      })
+    },
+  })
+}
+
+export function useDeleteGroupPocket() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      groupId,
+      pocketId,
+    }: {
+      groupId: string
+      pocketId: string
+    }) => deleteGroupPocket(groupId, pocketId),
+    onSuccess: (_, { groupId }) => {
+      void queryClient.invalidateQueries({
+        queryKey: groupKeys.pockets(groupId),
+      })
+    },
+  })
+}
+
+export function useAssignAccountToGroupPocket() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      groupId,
+      pocketId,
+      accountId,
+    }: {
+      groupId: string
+      pocketId: string
+      accountId: string
+    }) => assignAccountToGroupPocket(groupId, pocketId, accountId),
+    onSuccess: (_, { groupId }) => {
+      void queryClient.invalidateQueries({
+        queryKey: groupKeys.pockets(groupId),
+      })
+      void queryClient.invalidateQueries({
+        queryKey: groupKeys.accounts(groupId),
+      })
+    },
+  })
+}
+
+export function useUnassignAccountFromGroupPocket() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      groupId,
+      pocketId,
+      accountId,
+    }: {
+      groupId: string
+      pocketId: string
+      accountId: string
+    }) => unassignAccountFromGroupPocket(groupId, pocketId, accountId),
+    onSuccess: (_, { groupId }) => {
+      void queryClient.invalidateQueries({
+        queryKey: groupKeys.pockets(groupId),
+      })
+      void queryClient.invalidateQueries({
+        queryKey: groupKeys.accounts(groupId),
       })
     },
   })

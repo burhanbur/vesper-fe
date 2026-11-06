@@ -1,12 +1,12 @@
 import { useNavigate } from '@tanstack/react-router'
 import {
-  CreditCard,
   Layers,
-  PieChart,
   Plus,
+  ReceiptText,
   Share2,
   UserPlus,
   Users,
+  Wallet,
 } from 'lucide-react'
 import { useState, type SyntheticEvent } from 'react'
 import { toast } from 'sonner'
@@ -33,6 +33,7 @@ import {
   GroupCategoriesView,
   GroupCollaborationView,
   GroupMembersView,
+  GroupPocketsView,
   useCreateGroup,
   useGroupMembers,
   useGroups,
@@ -48,7 +49,7 @@ export function GroupsPage() {
   const [newGroupName, setNewGroupName] = useState('')
   const [joinCode, setJoinCode] = useState('')
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState('ringkasan')
+  const [activeTab, setActiveTab] = useState('saldo')
 
   // Default period to current UTC year-month YYYY-MM
   const now = new Date()
@@ -192,15 +193,15 @@ export function GroupsPage() {
                         type="button"
                         onClick={() => setSelectedGroupId(grp.id)}
                         className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all ${isSelected
-                            ? 'bg-indigo-600 text-white shadow-xs'
-                            : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700/60'
+                          ? 'bg-indigo-600 text-white shadow-xs'
+                          : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700/60'
                           }`}
                       >
                         <span>{grp.name}</span>
                         <span
                           className={`rounded-full px-1.5 py-0.2 text-[9px] ${isSelected
-                              ? 'bg-indigo-700 text-indigo-100'
-                              : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+                            ? 'bg-indigo-700 text-indigo-100'
+                            : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
                             }`}
                         >
                           {grp.role}
@@ -261,60 +262,74 @@ export function GroupsPage() {
 
                   {/* Workspace Tabs Navigation */}
                   <div className="mt-6 border-t border-slate-100 pt-5 dark:border-slate-800">
-                    <Tabs value={activeTab} onValueChange={setActiveTab}>
-                      <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-                        <TabsTrigger value="ringkasan" className="gap-2">
-                          <PieChart className="size-4" />
-                          <span>Ringkasan & Kas</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="rekening" className="gap-2">
-                          <CreditCard className="size-4" />
-                          <span>Rekening Bersama</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="anggota" className="gap-2">
-                          <Users className="size-4" />
-                          <span>Anggota & Akses</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="kategori" className="gap-2">
-                          <Layers className="size-4" />
-                          <span>Kategori & Laporan</span>
-                        </TabsTrigger>
-                      </TabsList>
+                    {(() => {
+                      const resolvedTab =
+                        activeTab === 'ringkasan'
+                          ? 'aktivitas'
+                          : activeTab === 'rekening'
+                            ? 'saldo'
+                            : activeTab
 
-                      {/* Tab 1: Ringkasan & Kolaborasi */}
-                      <TabsContent value="ringkasan" className="mt-6">
-                        <GroupCollaborationView
-                          groupId={activeGroup.id}
-                          members={members}
-                          period={period}
-                          onPeriodChange={setPeriod}
-                        />
-                      </TabsContent>
+                      return (
+                        <Tabs value={resolvedTab} onValueChange={setActiveTab}>
+                          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+                            <TabsTrigger value="saldo" className="gap-2">
+                              <Wallet className="size-4" />
+                              <span>Kantong & Saldo</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="aktivitas" className="gap-2">
+                              <ReceiptText className="size-4" />
+                              <span>Aktivitas & Mutasi</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="anggota" className="gap-2">
+                              <Users className="size-4" />
+                              <span>Anggota & Akses</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="kategori" className="gap-2">
+                              <Layers className="size-4" />
+                              <span>Kategori & Laporan</span>
+                            </TabsTrigger>
+                          </TabsList>
 
-                      {/* Tab 2: Rekening Bersama */}
-                      <TabsContent value="rekening" className="mt-6">
-                        <GroupAccountsView groupId={activeGroup.id} />
-                      </TabsContent>
+                          {/* Tab 1: Kantong Tujuan Grup & Rekening Terhubung */}
+                          <TabsContent value="saldo" className="mt-6 space-y-8">
+                            <GroupPocketsView groupId={activeGroup.id} />
+                            <div className="border-t border-slate-100 pt-6 dark:border-slate-800">
+                              <GroupAccountsView groupId={activeGroup.id} />
+                            </div>
+                          </TabsContent>
 
-                      {/* Tab 3: Anggota & Akses */}
-                      <TabsContent value="anggota" className="mt-6">
-                        <GroupMembersView
-                          groupId={activeGroup.id}
-                          groupName={activeGroup.name}
-                          groupCode={activeGroup.code}
-                          currentRole={activeGroup.role}
-                          onGroupLeft={() => setSelectedGroupId(null)}
-                        />
-                      </TabsContent>
+                          {/* Tab 2: Aktivitas & Mutasi (Tanpa Fake Unified Totals) */}
+                          <TabsContent value="aktivitas" className="mt-6">
+                            <GroupCollaborationView
+                              groupId={activeGroup.id}
+                              members={members}
+                              period={period}
+                              onPeriodChange={setPeriod}
+                            />
+                          </TabsContent>
 
-                      {/* Tab 4: Kategori & Laporan */}
-                      <TabsContent value="kategori" className="mt-6">
-                        <GroupCategoriesView
-                          groupId={activeGroup.id}
-                          period={period}
-                        />
-                      </TabsContent>
-                    </Tabs>
+                          {/* Tab 3: Anggota & Akses */}
+                          <TabsContent value="anggota" className="mt-6">
+                            <GroupMembersView
+                              groupId={activeGroup.id}
+                              groupName={activeGroup.name}
+                              groupCode={activeGroup.code}
+                              currentRole={activeGroup.role}
+                              onGroupLeft={() => setSelectedGroupId(null)}
+                            />
+                          </TabsContent>
+
+                          {/* Tab 4: Kategori & Laporan */}
+                          <TabsContent value="kategori" className="mt-6">
+                            <GroupCategoriesView
+                              groupId={activeGroup.id}
+                              period={period}
+                            />
+                          </TabsContent>
+                        </Tabs>
+                      )
+                    })()}
                   </div>
                 </Card>
               )}
