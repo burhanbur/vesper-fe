@@ -20,6 +20,8 @@ export interface AccountDto {
   name: string
   currency: string
   balance: string // decimal string from backend, e.g. "5000000.00"
+  is_credit_card?: boolean
+  credit_limit?: string | null
   description: string | null
   is_visible: boolean
   is_include_total: boolean
@@ -31,6 +33,8 @@ export interface AccountDto {
 }
 
 export interface CreateAccountInput {
+  is_credit_card?: boolean
+  credit_limit?: string | null
   account_type_id: string
   parent_account_id?: string | null
   icon?: string | null
@@ -43,6 +47,7 @@ export interface CreateAccountInput {
 }
 
 export interface UpdateAccountInput {
+  credit_limit?: string | null
   version: string
   account_type_id?: string
   parent_account_id?: string | null

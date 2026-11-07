@@ -1,4 +1,5 @@
 import type { AccountDto, AccountTypeDto } from '../types/account'
+import { moneyUnits } from './credit-card'
 
 export type AccountGroupKey =
     'bank' | 'ewallet' | 'cash' | 'investment' | 'liability' | 'other'
@@ -102,6 +103,7 @@ export function resolveAccountCategory(
     account: AccountDto,
     type?: AccountTypeDto,
 ): AccountGroupKey {
+    if (account.is_credit_card) return 'liability'
     const typeName = (type?.name || '').toLowerCase()
     const accName = account.name.toLowerCase()
 
@@ -206,14 +208,11 @@ export function resolveAccountCategory(
 export function getEffectiveBalance(
     account: AccountDto,
     children: AccountDto[] = [],
-): number {
+): bigint {
     if (children.length > 0) {
-        return children.reduce(
-            (sum, c) => sum + Number.parseFloat(c.balance || '0'),
-            0,
-        )
+        return children.reduce((sum, c) => sum + moneyUnits(c.balance), 0n)
     }
-    return Number.parseFloat(account.balance || '0')
+    return moneyUnits(account.balance)
 }
 
 /**
@@ -231,7 +230,7 @@ export function sortAccountList(
             return result.sort((a, b) => {
                 const balA = getEffectiveBalance(a, childrenMap.get(a.id))
                 const balB = getEffectiveBalance(b, childrenMap.get(b.id))
-                if (balB !== balA) return balB - balA
+                if (balB !== balA) return balB > balA ? 1 : -1
                 return a.name.localeCompare(b.name, 'id', { sensitivity: 'base' })
             })
 
@@ -239,7 +238,7 @@ export function sortAccountList(
             return result.sort((a, b) => {
                 const balA = getEffectiveBalance(a, childrenMap.get(a.id))
                 const balB = getEffectiveBalance(b, childrenMap.get(b.id))
-                if (balA !== balB) return balA - balB
+                if (balA !== balB) return balA > balB ? 1 : -1
                 return a.name.localeCompare(b.name, 'id', { sensitivity: 'base' })
             })
 
@@ -269,8 +268,8 @@ export interface GroupedAccountsData {
     key: AccountGroupKey
     meta: AccountCategoryMeta
     accounts: AccountDto[]
-    totalBalance: number
-    includedBalance: number
+    totalBalance: bigint
+    includedBalance: bigint
     totalPockets: number
 }
 
@@ -312,8 +311,8 @@ export function groupAccountsByCategory(
                 childrenMap,
             )
 
-            let totalBalance = 0
-            let includedBalance = 0
+            let totalBalance = 0n
+            let includedBalance = 0n
             let totalPockets = 0
 
             for (const acc of accountsInGroup) {
@@ -326,7 +325,7 @@ export function groupAccountsByCategory(
                 if (children.length > 0) {
                     for (const child of children) {
                         if (child.is_include_total) {
-                            includedBalance += Number.parseFloat(child.balance || '0')
+                            includedBalance += moneyUnits(child.balance)
                         }
                     }
                 } else if (acc.is_include_total) {
@@ -347,10 +346,10 @@ export function groupAccountsByCategory(
 }
 
 export interface AccountsOverviewStats {
-    netWorth: number
-    liquidCash: number
-    investments: number
-    liabilities: number
+    netWorth: bigint
+    liquidCash: bigint
+    investments: bigint
+    liabilities: bigint
     totalParentAccounts: number
     totalPockets: number
     zeroBalanceCount: number
@@ -364,10 +363,10 @@ export function computeAccountsOverview(
     childrenMap: Map<string, AccountDto[]>,
     typeMap: Map<string, AccountTypeDto>,
 ): AccountsOverviewStats {
-    let netWorth = 0
-    let liquidCash = 0
-    let investments = 0
-    let liabilities = 0
+    let netWorth = 0n
+    let liquidCash = 0n
+    let investments = 0n
+    let liabilities = 0n
     let totalPockets = 0
     let zeroBalanceCount = 0
 
@@ -376,7 +375,7 @@ export function computeAccountsOverview(
         totalPockets += children.length
         const effBal = getEffectiveBalance(parent, children)
 
-        if (effBal === 0) {
+        if (effBal === 0n) {
             zeroBalanceCount++
         }
 
@@ -384,7 +383,7 @@ export function computeAccountsOverview(
         if (children.length > 0) {
             for (const child of children) {
                 if (child.is_include_total) {
-                    netWorth += Number.parseFloat(child.balance || '0')
+                    netWorth += moneyUnits(child.balance)
                 }
             }
         } else if (parent.is_include_total) {
@@ -401,7 +400,8 @@ export function computeAccountsOverview(
         } else if (cat === 'investment') {
             investments += effBal
         } else if (cat === 'liability') {
-            liabilities += effBal
+            // Positive card balances are non-liquid assets, not negative debt.
+            liabilities += parent.is_credit_card && effBal > 0n ? 0n : effBal
         }
     }
 

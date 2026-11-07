@@ -6,6 +6,10 @@ const envSchema = z.object({
   VITE_APP_ENV: z
     .enum(['development', 'test', 'staging', 'production'])
     .default('development'),
+  VITE_ENABLE_CREDIT_CARD_CREATION: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
   VITE_ENABLE_MOCKS: z
     .enum(['true', 'false'])
     .default('false')
@@ -25,4 +29,5 @@ export const env = Object.freeze({
   apiBaseUrl: parsedEnv.data.VITE_API_BASE_URL,
   appEnv: parsedEnv.data.VITE_APP_ENV,
   enableMocks: parsedEnv.data.VITE_ENABLE_MOCKS,
+  enableCreditCardCreation: parsedEnv.data.VITE_ENABLE_CREDIT_CARD_CREATION,
 })

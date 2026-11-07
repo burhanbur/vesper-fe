@@ -91,7 +91,7 @@ export function GroupPocketsView({ groupId }: GroupPocketsViewProps) {
     // Candidate accounts: user's active leaf accounts not already assigned to any pocket
     const candidateAccounts = allAccounts.filter(
         (a) =>
-            !a.deleted_at &&
+            !a.deleted_at && !a.is_credit_card &&
             !parentAccountIds.has(a.id) &&
             !assignedAccountIds.has(a.id),
     )
@@ -164,7 +164,7 @@ export function GroupPocketsView({ groupId }: GroupPocketsViewProps) {
 
     async function handleAssignAccount(e: SyntheticEvent<HTMLFormElement>) {
         e.preventDefault()
-        if (!currentPocket || !selectedAccountIdToAssign) return
+        if (!currentPocket || !candidateAccounts.some((account) => account.id === selectedAccountIdToAssign)) return
 
         try {
             await assignAccount.mutateAsync({
@@ -297,8 +297,8 @@ export function GroupPocketsView({ groupId }: GroupPocketsViewProps) {
                                         <Badge
                                             variant="outline"
                                             className={`text-[10px] ${pocket.accounts.length > 0
-                                                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                                    : 'text-slate-400'
+                                                ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                                : 'text-slate-400'
                                                 }`}
                                         >
                                             {pocket.accounts.length} akun

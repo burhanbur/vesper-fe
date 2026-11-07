@@ -1,79 +1,67 @@
-# Credit Cards — Web Product and Delivery Plan
+# Credit Cards — Simplified Web Delivery Plan
 
-Status: draft; documentation only, not an implemented feature.
+Status: simple web implementation in progress. Existing account, expense and transfer flows support explicit credit-card metadata; no billing module or queue is introduced.
 
-Canonical product requirements: **CC-PRD-01**, `vesper-be/docs/credit-cards-prd.md` in the backend repository. When the standard sibling checkout exists, open [the canonical PRD](../../vesper-be/docs/credit-cards-prd.md). The path is a development convenience, not a deployed documentation URL. Backend contract changes must update this plan and the mobile plan in the same delivery.
+Canonical requirements: **CC-PRD-01**, `vesper-be/docs/credit-cards-prd.md`. Backend and mobile companion plans are `docs/credit-cards-implementation.md` in their respective repositories; these identifiers are not deployed links.
 
-## Product scope
+## Scope and accounting
 
-Support explicit, owner-private IDR credit cards rather than guessing liabilities from names. Phase 1 covers setup/opening debt, purchases, posted interest/fees, linked refunds, bank-to-card payments, reversals, exact summary and history. Phase 2 adds statement snapshots, due dates, allocation and reminders; Phase 3 adds installment tracking without repeating purchase expenses. Imports and advanced servicing require separate approval.
+Extend existing account, transaction and transfer flows; do not create a credit-card module, dedicated commands, new storage or offline queue. Purchases are normal EXPENSE; repayment is the existing atomic bank-to-card TRANSFER. Manual fees/posted interest are ordinary EXPENSE; a bank fee, if recorded, is separate from principal.
 
-A payment records an external action; Vesper does not initiate a bank payment. Credit limit is never income, a cash balance or a net-worth asset. Card credit after overpayment is non-liquid, not spending money.
+- Account `is_credit_card` defaults false. Explicit new cards retain compatible CASH classification; CASH/INVESTMENT enums do not change. Nullable `credit_limit` is a positive exact decimal string when supplied; null means untracked.
+- For exact signed balance B: debt = max(-B, 0), overpayment credit = max(B, 0). For tracked L, remaining contractual limit = L - debt, not L + B, including negative results.
+- Over-limit purchase and lower-limit edits remain allowed. Overpayment has nonblocking information only, no extra confirmation gate.
+- Positive B is “Kelebihan Bayar”, consumed by subsequent ordinary expenses, never forfeited or automatically refunded by the issuer. Do not promise additional issuer capacity.
+- Statements, installments, specialized refunds, issuer cash refunds, cash advances, reminders, imports and automated billing/interest are out of scope, not later phases.
 
-## Verified baseline
+## Minimal delivery tasks
 
-- `src/features/accounts/types/account.ts`: CASH/INVESTMENT contracts and string balances/versions.
-- `src/features/accounts/utils/account-grouping.ts`: keyword-based liability grouping, insufficient as an authorization/accounting signal.
-- `src/features/transactions/types/transaction.ts`: INCOME/EXPENSE/TRANSFER contracts.
-- `src/app/router/router.tsx`: existing authenticated account and transaction routes; no dedicated card route.
-- `src/lib/api-client.ts` and `src/features/auth/api/`: centralized requests and session coordination.
-- TanStack Query manages server state. Web has no mobile-style durable financial outbox.
+### WEB-01 Existing account contracts and forms
 
-Do not introduce a global state manager, new auth storage, or an offline queue for this feature.
+- Extend account API schemas/types and React Hook Form/Zod create/edit forms with the flag and optional limit. Preserve decimal balance/limit strings and opaque version strings; use exact arithmetic, never Number/parseFloat for money.
+- Use explicit metadata rather than account-name heuristics for accounting. Preserve compatible parsing/defaults for older responses and round-trip fields without accidental clearing.
+- Offer only private, own, IDR leaf cards and same-owner bank payment sources. Backend authorization is authoritative; do not offer group sharing.
+- Keep existing obligation-mapped accounts locked. No conversion, name-based reclassification, mapping edits or history rewrite.
+- Create at zero balance if no safe opening representation exists; defer opening-debt input rather than fabricate transactions.
+- Do not request PAN, CVV, PIN, expiry or bank credentials. Preserve centralized client/auth, protected routes and safe errors; add no financial payload/token persistence.
 
-## Proposed feature structure
+### WEB-02 Purchases, repayment and presentation
 
-Create `src/features/credit-cards/` with `api/`, `schemas/`, `hooks/`, `components/`, `utils/` and public `index.ts` only as files are needed. Keep `src/routes/` thin. Reuse shadcn primitives, RHF/Zod, centralized Axios and stable feature query keys. API schemas validate exact decimal strings and opaque versions; use exact arithmetic for previews, never Number/parseFloat for financial calculations.
+- Reuse existing purchase/transfer forms, APIs and replay/version handling, with duplicate-submit protection. No dedicated card endpoints or command recovery store.
+- Show “Utang Terpakai”, “Sisa Limit”, “Limit Tidak Dipantau” for null limits, and “Kelebihan Bayar” separately. Explain that limits and overpayments are not liquid cash.
+- Repayment records an external action: “Pencatatan ini tidak melakukan pembayaran ke bank.” Show any overpayment information without blocking save or adding a confirmation gate.
+- A timeout is not proof of rejection; retain existing request identity/reconciliation behavior rather than blindly submitting another payment.
+- Keep TanStack Query, existing query keys, centralized Axios and RHF/Zod. After confirmed mutations selectively invalidate accounts, transactions, dashboard, budgets and net worth as affected. No new global state manager or queue.
+- Provide loading/error/empty/pending states, safe Indonesian feedback, keyboard focus and accessible labels; check small/desktop viewports and avoid color-only financial status.
 
-Route proposals: `/credit-cards`, `/credit-cards/$cardId`; add statement detail only in Phase 2. Validate UUID params/search and reuse existing authenticated guards. Server authorization remains authoritative.
+### WEB-03 Reporting and compatibility
 
-## User experience and acceptance
+- Exclude limits and positive card overpayments from liquid cash/emergency funds despite CASH classification.
+- Count signed B in net worth once under inclusion settings and existing obligation mappings: debt when negative, non-liquid asset when positive. Never add a second liability or rewrite historical snapshots.
+- Count purchases/manual charges in spending and budgets once; principal transfers are neither income nor expense.
+- Coordinate account migration/API/sync compatibility with backend/mobile. Enable creation only after contract checks; disabling creation preserves existing reads/history and mobile pending work.
 
-| Surface          | Required behavior                                                                                                   |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Card list        | Outstanding, credit balance if positive, available credit, over-limit status and empty/loading/error states         |
-| Setup            | Name, optional issuer/last four, positive limit, optional opening debt/credit and as-of time; no PAN/CVV/expiry     |
-| Card detail      | Exact balance, confirmed timestamp, history, permitted actions, reconciliation references                           |
-| Purchase/charge  | Category and exact amount; unsupported cash advance/income actions unavailable and server-rejected                  |
-| Refund           | Select original purchase, show refundable remainder, prevent over-refund, distinguish refund from income            |
-| Payment          | Owned IDR cash source, principal, optional bank fee/category, projected balances, explicit overpayment confirmation |
-| Recovery         | Preserve command identity after timeout; resolve accepted/rejected/unknown outcome before offering a new payment    |
-| Statements later | Frozen totals and lines, remaining due, explicit issuer minimum, local calendar dates, payment allocations          |
+## Required tests and release gates
 
-Use copy such as “Utang Terpakai”, “Sisa Limit”, “Saldo Kredit”, and “Bayar Kartu”. Confirmation MUST say “Pencatatan ini tidak melakukan pembayaran ke bank.” Never imply remaining limit is liquid cash. Pending submission and background fetching differ visually. Disable duplicate submit; announce validation and mutation results accessibly.
+- Schema/unit: false defaults, null/positive limits, exact fractions, large version strings, explicit identity, remaining limit and reporting classification.
+- Component/regression: zero-balance setup, mapped-account lock, sharing refusal, normal expense/transfer forms, lower-limit edit, over-limit purchase, nonblocking overpayment, duplicate submit, uncertain outcome and targeted query invalidation.
+- Shared fixture: B = -2000000.00 → pay 2500000.00 → B = 500000.00 → spend 200000.00 → B = 300000.00 → spend 400000.00 → B = -100000.00. Credit is consumed without forfeiture or automatic refund.
+- Limit fixture: L = 1000000.00 and debt = 1200000.00 displays -200000.00; null remains untracked. Verify liquidity exclusion, signed net worth once and principal excluded from spending.
+- Critical E2E: create → purchase → repayment/overpayment → subsequent expense, including authorization, lost-response recovery using existing behavior, responsive layout and keyboard access. Backend owns atomic rollback/replay tests.
 
-Test keyboard focus, dialog errors, screen-reader labels, narrow mobile viewport and desktop. Do not use color alone for debt, over-limit or sync state. Use existing semantic tokens rather than a new visual system.
+## Delivery notes and remaining release checks
 
-## Delivery sequence
+- Account collection and detail reads default omitted metadata to false/null. Create and limit edits preserve exact decimal strings and opaque versions; unrelated edits omit limit fields rather than clearing them.
+- Card summaries and account totals use integer minor units. Positive overpayments remain signed net-worth assets but are excluded from liquidity and debt totals. Cards are excluded from group sharing/pockets, investment funding and Money Manager mapping.
+- Purchases remain EXPENSE and repayments remain TRANSFER. Card creation sends no opening balance. Subtype conversion and obligation mapping edits are not offered.
+- Duplicate submission is guarded in memory. The existing web endpoints expose no client replay identity/recovery contract; an uncertain result stops resubmission in that form and asks the user to reconcile history and balances. Closing/reloading is not durable replay protection; no queue or recovery storage was added.
+- Backend migration, private/unmapped card invariants, bank-source authorization, liquidity/emergency-fund server reports and atomic settlement remain backend responsibilities. The current web account DTO has no obligation-mapping or sharing metadata; existing unflagged mapped accounts are not converted or made limit-editable.
+- Run lint, typecheck, tests, targeted formatting and production build for this delivery. Critical authenticated flows against a compatible real backend remain release gates.
 
-### WEB-00 Contract readiness
+## Verification recorded 2026-11-07
 
-Approve canonical PRD decisions. Add fixtures for explicit LIABILITY/CREDIT_CARD metadata and decimal/refund semantics. Define backend capability detection and safe old-server behavior before enabling routes. Do not let a strict enum response crash existing accounts pages after server rollout.
-
-### WEB-01 Read-only integration
-
-Implement feature API schemas, query keys, card list/detail and account links. Replace keyword-based authority only when explicit server metadata exists. Unknown legacy cards show a migration-needed state rather than being silently converted. Keep positive card credits out of liquid totals and do not aggregate parent pockets into a card.
-
-### WEB-02 Mutations and recovery
-
-Implement forms and dedicated command API, one stable command UUID per reviewed submission. Reuse the UUID after timeout/retry. For reload recovery, specify a minimal application-scoped pending-command reference store containing only command ID and recovery state; no raw financial payload, tokens, PII or query-cache snapshots. Add this storage only after security review. The server must expose an owner-authorized way to resolve that reference before a new payment is offered. If recovery cannot be guaranteed, block uncertain repeat submission and show the support reference.
-
-Transport failure is not evidence of rejection. Never silently create a new command or change its expected version. Reversal is distinct from cancellation. Financial command responses must use the canonical envelope and safe Indonesian errors.
-
-After confirmed success selectively invalidate card, accounts, transactions, dashboard, budget and net-worth data. Query functions fetch/validate/map; they do not emit toasts. Preserve the existing 401 refresh contract and do not clear valid auth for 403.
-
-### WEB-03 Advanced phases
-
-Add frozen statements/allocation views and explicitly configured calendar dates, then installments. Do not locally invent issuer minimum due, automatic fees or scheduled expense postings. No offline statement close or web offline write promise.
-
-## Test plan and release gates
-
-- Unit: API schemas, decimal previews, summary classification, card credit and over-limit, stable query keys.
-- Component: setup, partial payment, fee, refund bounds, overpayment confirmation, no double submit, stale versions, capability-disabled and unknown-result recovery.
-- Regression: existing account grouping/detail, transaction forms, transfer forms, protected route behavior and cache invalidation.
-- Playwright: create → purchase → partial pay → refund → reverse; reload after lost payment response; unauthorized card; responsive keyboard flow.
-- Shared numeric fixture: purchase 500000, pay 300000, card fee 25000 → debt 225000, spending 525000, bank reduced 300000. Payment must not increase expense.
-
-Run relevant tests first, then `npm run check`, `npm run build`, and critical `npm run test:e2e` flows. Confirm current scripts in `package.json`; report actual results. Do not claim these checks ran for this documentation-only delivery.
-
-Release depends on gated backend commands/read contracts and compatible mobile reads/reconciliation. Feature disablement retains read/recovery access. No existing public account/history route is removed.
+- Web typecheck, repository lint and production build passed; Vitest passed 35 files / 220 tests. The build retains a non-fatal chunk-size warning.
+- The unchanged `e2e/credit-cards.spec.ts` passed both 390px and 1280px scenarios using installed Windows Chrome via Windows Node, with `chromiumSandbox: true`. Tests verified mocked card summaries and keyboard limit editing; all API responses were mocked. This is not evidence of real backend settlement or mobile synchronization.
+- Linux Chromium cannot launch because `libnspr4.so` is missing. Existing Windows Chrome provided browser verification without installing system packages or weakening sandbox settings. A temporary configuration outside the repository reused the existing server; no product browser configuration was changed.
+- Latest independent mobile verification passed `flutter analyze` with no issues and all 676 Flutter tests. These are separate test suites, not a cross-platform live integration run.
+- No persistent migration, deployment, real-account financial mutation, or database/container cleanup was performed. Real authenticated backend/web/mobile integration and approved persistent migration remain release gates.

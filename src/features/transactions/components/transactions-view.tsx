@@ -28,7 +28,8 @@ import {
 } from '../hooks/use-transactions'
 import type { TransactionType } from '@/features/transactions/types/transaction'
 import { exportTransactionsToCsv } from '@/lib/csv-exporter'
-import { formatDateTime, formatRupiah } from '@/lib/formatters'
+import { formatDateTime } from '@/lib/formatters'
+import { formatExactRupiah } from '@/features/accounts'
 
 export function TransactionsView({
   accountId,
@@ -81,7 +82,14 @@ export function TransactionsView({
 
   async function handleDelete(id: string, version: string) {
     if (window.confirm('Hapus transaksi ini?')) {
-      await deleteTx.mutateAsync({ id, version })
+      try {
+        await deleteTx.mutateAsync({ id, version })
+        toast.success('Transaksi berhasil dihapus.')
+      } catch (err) {
+        toast.error(
+          err instanceof Error ? err.message : 'Gagal menghapus transaksi.',
+        )
+      }
     }
   }
 
@@ -257,8 +265,12 @@ export function TransactionsView({
         <Card className="overflow-hidden">
           {isError ? (
             <div role="alert" className="p-8 text-center">
-              <p className="text-slate-600 dark:text-slate-400">Gagal memuat transaksi.</p>
-              <Button onClick={() => void refetch()} className="mt-2">Coba lagi</Button>
+              <p className="text-slate-600 dark:text-slate-400">
+                Gagal memuat transaksi.
+              </p>
+              <Button onClick={() => void refetch()} className="mt-2">
+                Coba lagi
+              </Button>
             </div>
           ) : isLoading ? (
             <div className="p-12 text-center text-sm text-slate-500 dark:text-slate-400">
@@ -346,7 +358,7 @@ export function TransactionsView({
                           }`}
                       >
                         {isIncome ? '+' : isTransfer ? '' : '-'}
-                        {formatRupiah(tx.amount)}
+                        {formatExactRupiah(tx.amount)}
                       </span>
 
                       <button

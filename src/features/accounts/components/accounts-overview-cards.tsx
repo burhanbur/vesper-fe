@@ -1,7 +1,7 @@
 import { Banknote, PiggyBank, Scale, TrendingUp, Wallet } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import type { AccountsOverviewStats } from '../utils/account-grouping'
-import { formatRupiah } from '@/lib/formatters'
+import { formatExactRupiah, moneyDecimal } from '../utils/credit-card'
 
 interface AccountsOverviewCardsProps {
     readonly overview: AccountsOverviewStats
@@ -20,7 +20,7 @@ export function AccountsOverviewCards({
                             Total Kekayaan Bersih
                         </p>
                         <h3 className="mt-1.5 font-mono text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl dark:text-white">
-                            {formatRupiah(overview.netWorth)}
+                            {formatExactRupiah(moneyDecimal(overview.netWorth))}
                         </h3>
                         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                             Saldo semua akun masuk total
@@ -40,7 +40,7 @@ export function AccountsOverviewCards({
                             Dana Likuid (Kas & Bank)
                         </p>
                         <h3 className="mt-1.5 font-mono text-xl font-extrabold tracking-tight text-blue-900 sm:text-2xl dark:text-blue-100">
-                            {formatRupiah(overview.liquidCash)}
+                            {formatExactRupiah(moneyDecimal(overview.liquidCash))}
                         </h3>
                         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                             Kas fisik, rekening bank, & e-wallet
@@ -60,7 +60,7 @@ export function AccountsOverviewCards({
                             Investasi & Portofolio
                         </p>
                         <h3 className="mt-1.5 font-mono text-xl font-extrabold tracking-tight text-amber-900 sm:text-2xl dark:text-amber-100">
-                            {formatRupiah(overview.investments)}
+                            {formatExactRupiah(moneyDecimal(overview.investments))}
                         </h3>
                         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                             Reksadana, saham, crypto & RDN
@@ -80,7 +80,7 @@ export function AccountsOverviewCards({
                             Hutang & Kewajiban
                         </p>
                         <h3 className="mt-1.5 font-mono text-xl font-extrabold tracking-tight text-rose-900 sm:text-2xl dark:text-rose-100">
-                            {formatRupiah(overview.liabilities)}
+                            {formatExactRupiah(moneyDecimal(overview.liabilities))}
                         </h3>
                         <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
                             <PiggyBank className="size-3.5 text-slate-400 dark:text-slate-500" />

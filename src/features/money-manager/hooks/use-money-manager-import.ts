@@ -89,7 +89,7 @@ export function useMoneyManagerImport() {
           .map((a) => a.parent_account_id)
           .filter((id): id is string => Boolean(id)),
       )
-      const leafAccounts = existingAccounts.filter((a) => !parentIds.has(a.id))
+      const leafAccounts = existingAccounts.filter((a) => !a.is_credit_card && !parentIds.has(a.id))
 
       const accountMapByName = new Map<string, AccountDto>(
         leafAccounts.map((a) => [a.name.toLowerCase().trim(), a]),

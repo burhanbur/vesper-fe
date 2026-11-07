@@ -1,4 +1,14 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
+import { CreditCardSummary } from '@/features/accounts/components/credit-card-summary'
+import {
+  canRepayCard,
+  isActiveLeaf,
+  isPositiveMoney,
+  moneyDecimal,
+  moneyUnits,
+  formatExactRupiah,
+} from '@/features/accounts'
+import { resolveAccountCategory } from '@/features/accounts/utils/account-grouping'
 import {
   AlertCircle,
   ArrowDownUp,
@@ -29,6 +39,8 @@ import { InlineTimezoneSelect } from '@/components/common/timezone-selector'
 import { useTimezone } from '@/hooks/use-timezone'
 import { fromDatetimeLocalValue, toDatetimeLocalValue } from '@/lib/timezone'
 import { useCreateTransfer } from '../hooks/use-transactions'
+import { useAuth } from '@/features/auth'
+import { ApiError } from '@/lib/api-error'
 
 interface TransferFormDialogProps {
   readonly open: boolean
@@ -56,6 +68,7 @@ export function TransferFormDialog({
   onOpenChange,
 }: TransferFormDialogProps) {
   const { timezone } = useTimezone()
+  const { user } = useAuth()
   const [formTimezone, setFormTimezone] = useState(timezone)
   const [fromAccountId, setFromAccountId] = useState('')
   const [toAccountId, setToAccountId] = useState('')
@@ -69,62 +82,83 @@ export function TransferFormDialog({
   const { data: accounts = [] } = useAccounts()
   const { data: accountTypes = [] } = useAccountTypes()
   const createTransfer = useCreateTransfer()
+  const submitting = useRef(false)
+  const [uncertain, setUncertain] = useState(false)
 
   const accountTypeMap = useMemo(() => {
     return new Map(accountTypes.map((t) => [t.id, t]))
   }, [accountTypes])
 
-  const selectedFrom = fromAccountId || (accounts[0]?.id ?? '')
+  const sources = accounts.filter(
+    (account) => !account.is_credit_card && isActiveLeaf(account, accounts),
+  )
+  const selectedFrom =
+    sources.find((account) => account.id === fromAccountId)?.id ||
+    (sources[0]?.id ?? '')
+  const source = sources.find((account) => account.id === selectedFrom)
+  const destinations = accounts.filter(
+    (account) =>
+      account.id !== selectedFrom &&
+      isActiveLeaf(account, accounts) &&
+      (!account.is_credit_card ||
+        (source &&
+          account.user_id === user?.id &&
+          canRepayCard(source, account) &&
+          accountTypeMap.get(source.account_type_id)?.category === 'CASH' &&
+          resolveAccountCategory(
+            source,
+            accountTypeMap.get(source.account_type_id),
+          ) === 'bank')),
+  )
   const selectedTo =
-    toAccountId ||
-    (accounts.find((a) => a.id !== selectedFrom)?.id ?? accounts[0]?.id ?? '')
+    destinations.find((account) => account.id === toAccountId)?.id ||
+    (destinations[0]?.id ?? '')
 
-  const fromAccount = useMemo(
-    () => accounts.find((a) => a.id === selectedFrom),
-    [accounts, selectedFrom],
-  )
-  const toAccount = useMemo(
-    () => accounts.find((a) => a.id === selectedTo),
-    [accounts, selectedTo],
-  )
+  const fromAccount = accounts.find((a) => a.id === selectedFrom)
+  const toAccount = accounts.find((a) => a.id === selectedTo)
 
-  const accountOptions = useMemo<Select2Option[]>(() => {
-    return accounts.map((acc) => {
-      const accType = accountTypeMap.get(acc.account_type_id)
-      const visual = getAccountVisual(acc, accType)
-      const VisualIcon = visual.icon
+  const accountOptions: Select2Option[] = accounts.map((acc) => {
+    const accType = accountTypeMap.get(acc.account_type_id)
+    const visual = getAccountVisual(acc, accType)
+    const VisualIcon = visual.icon
 
-      return {
-        value: acc.id,
-        label: acc.name,
-        badge: visual.brandBadge ?? accType?.name,
-        description: `Saldo: ${formatRupiah(acc.balance)}`,
-        icon: (
-          <div
-            className={cn(
-              'grid size-6 shrink-0 place-items-center rounded-md border text-xs',
-              visual.badgeBg,
-              visual.badgeBorder,
-              visual.badgeText,
-            )}
-          >
-            <VisualIcon className="size-3.5" />
-          </div>
-        ),
-      }
-    })
-  }, [accounts, accountTypeMap])
+    return {
+      value: acc.id,
+      label: acc.name,
+      badge: visual.brandBadge ?? accType?.name,
+      description: `Saldo: ${acc.is_credit_card ? formatExactRupiah(acc.balance) : formatRupiah(acc.balance)}`,
+      icon: (
+        <div
+          className={cn(
+            'grid size-6 shrink-0 place-items-center rounded-md border text-xs',
+            visual.badgeBg,
+            visual.badgeBorder,
+            visual.badgeText,
+          )}
+        >
+          <VisualIcon className="size-3.5" />
+        </div>
+      ),
+    }
+  })
 
   const numAmount = parseCurrency(amount)
-  const fromBalanceNum = fromAccount ? Number(fromAccount.balance) : 0
-  const toBalanceNum = toAccount ? Number(toAccount.balance) : 0
+  const fromBalanceNum =
+    fromAccount && !toAccount?.is_credit_card ? Number(fromAccount.balance) : 0
+  const toBalanceNum =
+    toAccount && !toAccount.is_credit_card ? Number(toAccount.balance) : 0
   const newFromBalance = fromBalanceNum - numAmount
   const newToBalance = toBalanceNum + numAmount
   const isInsufficientBalance = Boolean(
-    fromAccount && numAmount > 0 && numAmount > fromBalanceNum,
+    fromAccount &&
+    (toAccount?.is_credit_card
+      ? isPositiveMoney(amount) &&
+      moneyUnits(amount) > moneyUnits(fromAccount.balance)
+      : numAmount > 0 && numAmount > fromBalanceNum),
   )
 
   function handleSwapAccounts() {
+    if (toAccount?.is_credit_card) return
     const currentFrom = selectedFrom
     const currentTo = selectedTo
     setFromAccountId(currentTo)
@@ -152,6 +186,15 @@ export function TransferFormDialog({
   }
 
   function handleAddAmount(delta: number) {
+    if (toAccount?.is_credit_card) {
+      setAmount(
+        moneyDecimal(
+          (isPositiveMoney(amount) ? moneyUnits(amount) : 0n) +
+          BigInt(delta) * 100n,
+        ),
+      )
+      return
+    }
     const current = parseCurrency(amount)
     const next = current + delta
     setAmount(next.toString())
@@ -159,6 +202,11 @@ export function TransferFormDialog({
 
   function handleSetAllBalance() {
     if (!fromAccount) return
+    if (toAccount?.is_credit_card) {
+      const balance = moneyUnits(fromAccount.balance)
+      setAmount(moneyDecimal(balance > 0n ? balance : 0n))
+      return
+    }
     const bal = Math.max(0, Math.floor(Number(fromAccount.balance)))
     setAmount(bal.toString())
   }
@@ -180,32 +228,55 @@ export function TransferFormDialog({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (submitting.current || uncertain) return
     setError(null)
 
+    if (!fromAccount || !toAccount || fromAccount.is_credit_card) {
+      setError('Pilih akun sumber dan tujuan yang didukung.')
+      return
+    }
+    if (toAccount.is_credit_card && !/^\d{1,18}(\.\d{1,2})?$/.test(amount)) {
+      setError('Masukkan nominal dengan titik desimal, maksimal dua desimal.')
+      return
+    }
     if (selectedFrom === selectedTo) {
       setError('Akun asal dan akun tujuan harus berbeda.')
       return
     }
 
-    if (numAmount <= 0) {
+    if (toAccount.is_credit_card ? !isPositiveMoney(amount) : numAmount <= 0) {
       setError('Masukkan nominal transfer yang valid.')
       return
     }
 
+    submitting.current = true
     try {
       await createTransfer.mutateAsync({
         from_account_id: selectedFrom,
         to_account_id: selectedTo,
-        amount: sanitizeCurrency(amount, { toFixed: 2 }),
+        amount: toAccount.is_credit_card
+          ? moneyDecimal(moneyUnits(amount))
+          : sanitizeCurrency(amount, { toFixed: 2 }),
         transacted_at: fromDatetimeLocalValue(date, formTimezone),
         description: description.trim() || null,
       })
       resetForm()
       onOpenChange(false)
-    } catch (err) {
+    } catch (error) {
+      const rejected =
+        error instanceof ApiError &&
+        error.status !== undefined &&
+        error.status >= 400 &&
+        error.status < 500 &&
+        error.status !== 408
+      setUncertain(!rejected)
       setError(
-        err instanceof Error ? err.message : 'Gagal melakukan transfer dana.',
+        rejected
+          ? 'Transfer ditolak. Periksa pilihan akun, nominal, dan saldo terbaru sebelum mencoba lagi.'
+          : 'Hasil transfer belum dapat dipastikan. Periksa riwayat transaksi dan muat ulang saldo sebelum mencatat ulang; jangan menganggap pembayaran ditolak.',
       )
+    } finally {
+      submitting.current = false
     }
   }
 
@@ -253,13 +324,17 @@ export function TransferFormDialog({
                   <span className="text-[11px] text-slate-500 dark:text-slate-400">
                     Saldo:{' '}
                     <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
-                      {formatRupiah(fromAccount.balance)}
+                      {toAccount?.is_credit_card
+                        ? formatExactRupiah(fromAccount.balance)
+                        : formatRupiah(fromAccount.balance)}
                     </span>
                   </span>
                 ) : null}
               </div>
               <Select2
-                options={accountOptions}
+                options={accountOptions.filter((option) =>
+                  sources.some((account) => account.id === option.value),
+                )}
                 value={selectedFrom}
                 onChange={handleFromChange}
                 placeholder="Pilih akun sumber..."
@@ -277,6 +352,7 @@ export function TransferFormDialog({
               <button
                 type="button"
                 onClick={handleSwapAccounts}
+                disabled={Boolean(toAccount?.is_credit_card)}
                 title="Tukar posisi akun sumber dan tujuan"
                 className="group relative z-10 flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-xs transition-all hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-600 active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-indigo-500 dark:hover:bg-slate-700 dark:hover:text-indigo-400"
               >
@@ -295,13 +371,17 @@ export function TransferFormDialog({
                   <span className="text-[11px] text-slate-500 dark:text-slate-400">
                     Saldo:{' '}
                     <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
-                      {formatRupiah(toAccount.balance)}
+                      {toAccount.is_credit_card
+                        ? formatExactRupiah(toAccount.balance)
+                        : formatRupiah(toAccount.balance)}
                     </span>
                   </span>
                 ) : null}
               </div>
               <Select2
-                options={accountOptions}
+                options={accountOptions.filter((option) =>
+                  destinations.some((account) => account.id === option.value),
+                )}
                 value={selectedTo}
                 onChange={handleToChange}
                 placeholder="Pilih akun tujuan..."
@@ -335,16 +415,44 @@ export function TransferFormDialog({
               ) : null}
             </div>
 
-            <CurrencyInput
-              id="tf-amount"
-              placeholder="0"
-              value={amount}
-              onRawChange={setAmount}
-              showCompactBadge={true}
-              showTerbilang={true}
-              required
-              className="h-11 text-base font-semibold text-slate-900 dark:text-slate-100"
-            />
+            {toAccount?.is_credit_card ? (
+              <>
+                <Input
+                  id="tf-amount"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={(event) => setAmount(event.target.value)}
+                  placeholder="2500000.00"
+                  required
+                />
+                <p className="text-xs">
+                  Pencatatan ini tidak melakukan pembayaran ke bank. Gunakan
+                  titik desimal. Kelebihan bayar tidak memerlukan konfirmasi
+                  tambahan.
+                </p>
+                <CreditCardSummary
+                  account={{
+                    ...toAccount,
+                    balance: /^\d+(\.\d{1,2})?$/.test(amount)
+                      ? moneyDecimal(
+                        moneyUnits(toAccount.balance) + moneyUnits(amount),
+                      )
+                      : toAccount.balance,
+                  }}
+                />
+              </>
+            ) : (
+              <CurrencyInput
+                id="tf-amount"
+                placeholder="0"
+                value={amount}
+                onRawChange={setAmount}
+                showCompactBadge={true}
+                showTerbilang={true}
+                required
+                className="h-11 text-base font-semibold text-slate-900 dark:text-slate-100"
+              />
+            )}
 
             {/* Quick Presets */}
             <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
@@ -391,7 +499,8 @@ export function TransferFormDialog({
           {numAmount > 0 &&
             selectedFrom !== selectedTo &&
             fromAccount &&
-            toAccount ? (
+            toAccount &&
+            !toAccount.is_credit_card ? (
             <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-3 text-xs transition-all dark:border-indigo-900/40 dark:bg-indigo-950/20">
               <div className="flex items-center justify-between border-b border-indigo-100/80 pb-2 dark:border-indigo-900/40">
                 <div className="flex items-center gap-1.5 font-medium text-indigo-950 dark:text-indigo-200">
@@ -531,8 +640,13 @@ export function TransferFormDialog({
             type="submit"
             variant="default"
             disabled={
+              uncertain ||
               createTransfer.isPending ||
-              numAmount <= 0 ||
+              !fromAccount ||
+              !toAccount ||
+              (toAccount?.is_credit_card
+                ? !isPositiveMoney(amount)
+                : numAmount <= 0) ||
               selectedFrom === selectedTo ||
               accounts.length < 2
             }

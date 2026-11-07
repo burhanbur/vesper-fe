@@ -17,6 +17,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { AppShell } from '@/components/layout/app-shell'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -40,7 +41,7 @@ import {
   type AccountSortOption,
 } from '@/features/accounts'
 import type { AccountDto } from '@/features/accounts/types/account'
-import { formatRupiah } from '@/lib/formatters'
+import { formatExactRupiah, moneyDecimal } from '@/features/accounts'
 
 export function AccountsPage() {
   const navigate = useNavigate()
@@ -119,18 +120,38 @@ export function AccountsPage() {
   }
 
   async function handleToggleVisible(acc: AccountDto) {
-    await updateAccount.mutateAsync({
-      id: acc.id,
-      input: {
-        version: acc.version,
-        is_visible: !acc.is_visible,
-      },
-    })
+    try {
+      await updateAccount.mutateAsync({
+        id: acc.id,
+        input: {
+          version: acc.version,
+          is_visible: !acc.is_visible,
+        },
+      })
+      toast.success(
+        acc.is_visible
+          ? `Akun "${acc.name}" disembunyikan.`
+          : `Akun "${acc.name}" ditampilkan.`,
+      )
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : 'Gagal memperbarui visibilitas akun.',
+      )
+    }
   }
 
   async function handleDelete(acc: AccountDto) {
     if (window.confirm(`Hapus akun "${acc.name}"?`)) {
-      await deleteAccount.mutateAsync({ id: acc.id, version: acc.version })
+      try {
+        await deleteAccount.mutateAsync({ id: acc.id, version: acc.version })
+        toast.success(`Akun "${acc.name}" berhasil dihapus.`)
+      } catch (err) {
+        toast.error(
+          err instanceof Error ? err.message : 'Gagal menghapus akun.',
+        )
+      }
     }
   }
 
@@ -150,7 +171,7 @@ export function AccountsPage() {
       }
 
       // Hide zero balance toggle (only when not searching)
-      if (hideZeroBalances && !query && effBalance === 0) {
+      if (hideZeroBalances && !query && effBalance === 0n) {
         return false
       }
 
@@ -261,15 +282,15 @@ export function AccountsPage() {
                 type="button"
                 onClick={() => setSelectedCategory('all')}
                 className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'all'
-                    ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm'
-                    : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+                  ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm'
+                  : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
                   }`}
               >
                 Semua
                 <span
                   className={`rounded-full px-1.5 py-0.5 font-mono text-[11px] ${selectedCategory === 'all'
-                      ? 'bg-white/20 text-white'
-                      : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
                     }`}
                 >
                   {categoryCounts.all}
@@ -281,15 +302,15 @@ export function AccountsPage() {
                   type="button"
                   onClick={() => setSelectedCategory('bank')}
                   className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'bank'
-                      ? 'border-blue-600 bg-blue-600 text-white shadow-sm'
-                      : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+                    ? 'border-blue-600 bg-blue-600 text-white shadow-sm'
+                    : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
                     }`}
                 >
                   🏦 Bank
                   <span
                     className={`rounded-full px-1.5 py-0.5 font-mono text-[11px] ${selectedCategory === 'bank'
-                        ? 'bg-white/20 text-white'
-                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
                       }`}
                   >
                     {categoryCounts.bank}
@@ -302,15 +323,15 @@ export function AccountsPage() {
                   type="button"
                   onClick={() => setSelectedCategory('ewallet')}
                   className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'ewallet'
-                      ? 'border-cyan-600 bg-cyan-600 text-white shadow-sm'
-                      : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+                    ? 'border-cyan-600 bg-cyan-600 text-white shadow-sm'
+                    : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
                     }`}
                 >
                   💳 E-Wallet
                   <span
                     className={`rounded-full px-1.5 py-0.5 font-mono text-[11px] ${selectedCategory === 'ewallet'
-                        ? 'bg-white/20 text-white'
-                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
                       }`}
                   >
                     {categoryCounts.ewallet}
@@ -323,15 +344,15 @@ export function AccountsPage() {
                   type="button"
                   onClick={() => setSelectedCategory('cash')}
                   className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'cash'
-                      ? 'border-emerald-600 bg-emerald-600 text-white shadow-sm'
-                      : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+                    ? 'border-emerald-600 bg-emerald-600 text-white shadow-sm'
+                    : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
                     }`}
                 >
                   💵 Kas & Tunai
                   <span
                     className={`rounded-full px-1.5 py-0.5 font-mono text-[11px] ${selectedCategory === 'cash'
-                        ? 'bg-white/20 text-white'
-                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
                       }`}
                   >
                     {categoryCounts.cash}
@@ -344,15 +365,15 @@ export function AccountsPage() {
                   type="button"
                   onClick={() => setSelectedCategory('investment')}
                   className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'investment'
-                      ? 'border-amber-600 bg-amber-600 text-white shadow-sm'
-                      : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+                    ? 'border-amber-600 bg-amber-600 text-white shadow-sm'
+                    : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
                     }`}
                 >
                   📈 Investasi
                   <span
                     className={`rounded-full px-1.5 py-0.5 font-mono text-[11px] ${selectedCategory === 'investment'
-                        ? 'bg-white/20 text-white'
-                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
                       }`}
                   >
                     {categoryCounts.investment}
@@ -365,15 +386,15 @@ export function AccountsPage() {
                   type="button"
                   onClick={() => setSelectedCategory('liability')}
                   className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${selectedCategory === 'liability'
-                      ? 'border-rose-600 bg-rose-600 text-white shadow-sm'
-                      : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+                    ? 'border-rose-600 bg-rose-600 text-white shadow-sm'
+                    : 'border-slate-200/80 bg-white/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
                     }`}
                 >
                   ⚖️ Hutang
                   <span
                     className={`rounded-full px-1.5 py-0.5 font-mono text-[11px] ${selectedCategory === 'liability'
-                        ? 'bg-white/20 text-white'
-                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
                       }`}
                   >
                     {categoryCounts.liability}
@@ -478,8 +499,8 @@ export function AccountsPage() {
                     type="button"
                     onClick={() => setViewMode('grouped')}
                     className={`rounded-md p-1.5 transition-colors ${viewMode === 'grouped'
-                        ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-white'
-                        : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+                      ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-white'
+                      : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
                       }`}
                     title="Tampilan Grup Kategori"
                     aria-label="Tampilan Grup Kategori"
@@ -490,8 +511,8 @@ export function AccountsPage() {
                     type="button"
                     onClick={() => setViewMode('flat')}
                     className={`rounded-md p-1.5 transition-colors ${viewMode === 'flat'
-                        ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-white'
-                        : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
+                      ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-white'
+                      : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
                       }`}
                     title="Tampilan Daftar Datar"
                     aria-label="Tampilan Daftar Datar"
@@ -595,7 +616,7 @@ export function AccountsPage() {
 
                     <div className="text-right">
                       <span className="font-mono text-xs font-semibold text-slate-700 sm:text-sm dark:text-slate-300">
-                        Subtotal: {formatRupiah(group.totalBalance)}
+                        Subtotal: {formatExactRupiah(moneyDecimal(group.totalBalance))}
                       </span>
                     </div>
                   </div>

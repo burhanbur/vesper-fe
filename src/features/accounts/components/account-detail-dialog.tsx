@@ -8,6 +8,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import type { AccountDto, AccountTypeDto } from '../types/account'
+import { CreditCardSummary } from './credit-card-summary'
+import { formatExactRupiah } from '../utils/credit-card'
 
 type AccountDetailDialogProps = {
   account: AccountDto
@@ -28,6 +30,7 @@ function formatTimestamp(value: string) {
 }
 
 function formatBalance(account: AccountDto) {
+  if (account.is_credit_card) return formatExactRupiah(account.balance)
   const balance = Number(account.balance)
   if (!Number.isFinite(balance)) return `${account.balance} ${account.currency}`
   try {
@@ -122,11 +125,16 @@ export function AccountDetailDialog({
         <dl className="my-4 max-h-[55dvh] space-y-3 overflow-y-auto pr-2">
           {fields.map(([label, value]) => (
             <div key={label} className="grid gap-1 sm:grid-cols-2 sm:gap-4">
-              <dt className="text-sm text-slate-500 dark:text-slate-400">{label}</dt>
-              <dd className="text-sm break-words text-slate-900 dark:text-slate-100">{value}</dd>
+              <dt className="text-sm text-slate-500 dark:text-slate-400">
+                {label}
+              </dt>
+              <dd className="text-sm break-words text-slate-900 dark:text-slate-100">
+                {value}
+              </dd>
             </div>
           ))}
         </dl>
+        {account.is_credit_card && <CreditCardSummary account={account} />}
         <DialogFooter>
           <Button onClick={onClose}>Tutup</Button>
         </DialogFooter>

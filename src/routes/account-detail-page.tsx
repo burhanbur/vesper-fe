@@ -4,6 +4,9 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useAccountDetail } from '@/features/accounts/hooks/use-account-detail'
 import { TransactionsView } from '@/features/transactions'
+import { CreditCardSummary } from '@/features/accounts/components/credit-card-summary'
+import { CreditLimitForm } from '@/features/accounts/components/credit-limit-form'
+import { formatExactRupiah } from '@/features/accounts/utils/credit-card'
 
 export function AccountDetailPage() {
     const { accountId } = useParams({ from: '/accounts/$accountId' })
@@ -49,10 +52,7 @@ export function AccountDetailPage() {
                                             Saldo akun (bukan gabungan)
                                         </dt>
                                         <dd className="font-mono text-lg font-bold text-slate-900 dark:text-white">
-                                            {new Intl.NumberFormat('id-ID', {
-                                                style: 'currency',
-                                                currency: account.currency,
-                                            }).format(Number(account.balance))}
+                                            {formatExactRupiah(account.balance)}
                                         </dd>
                                     </div>
                                     <div>
@@ -69,6 +69,12 @@ export function AccountDetailPage() {
                                         </dd>
                                     </div>
                                 </dl>
+                                {account.is_credit_card && <>
+                                    <h2 className="font-semibold">Kartu Kredit Pribadi</h2>
+                                    <CreditCardSummary account={account} />
+                                    <p className="text-xs">Limit dan kelebihan bayar bukan kas likuid. Kelebihan bayar digunakan oleh pengeluaran berikutnya, bukan pengembalian otomatis atau tambahan limit bank.</p>
+                                    <CreditLimitForm key={account.version} account={account} />
+                                </>}
                             </Card>
                         }
                     />

@@ -45,7 +45,8 @@ export function InvestmentFormDialog({
   const [error, setError] = useState<string | null>(null)
 
   const { data: instruments = [] } = useInstruments()
-  const { data: accounts = [] } = useAccounts()
+  const { data: allAccounts = [] } = useAccounts()
+  const accounts = allAccounts.filter((account) => !account.is_credit_card && !account.deleted_at)
   const { data: accountTypes = [] } = useAccountTypes()
   const createTx = useCreateInvestmentTransaction()
 
@@ -152,8 +153,8 @@ export function InvestmentFormDialog({
               type="button"
               onClick={() => setType('BUY')}
               className={`rounded-xl py-2 text-xs font-semibold transition-all ${type === 'BUY'
-                  ? 'border border-emerald-500/40 bg-emerald-500/20 text-emerald-300 shadow-sm'
-                  : 'border border-transparent bg-slate-800/60 text-slate-400'
+                ? 'border border-emerald-500/40 bg-emerald-500/20 text-emerald-300 shadow-sm'
+                : 'border border-transparent bg-slate-800/60 text-slate-400'
                 }`}
             >
               BELI (BUY)
@@ -162,8 +163,8 @@ export function InvestmentFormDialog({
               type="button"
               onClick={() => setType('SELL')}
               className={`rounded-xl py-2 text-xs font-semibold transition-all ${type === 'SELL'
-                  ? 'border border-rose-500/40 bg-rose-500/20 text-rose-300 shadow-sm'
-                  : 'border border-transparent bg-slate-800/60 text-slate-400'
+                ? 'border border-rose-500/40 bg-rose-500/20 text-rose-300 shadow-sm'
+                : 'border border-transparent bg-slate-800/60 text-slate-400'
                 }`}
             >
               JUAL (SELL)
@@ -172,8 +173,8 @@ export function InvestmentFormDialog({
               type="button"
               onClick={() => setType('DIVIDEND')}
               className={`rounded-xl py-2 text-xs font-semibold transition-all ${type === 'DIVIDEND'
-                  ? 'border border-indigo-500/40 bg-indigo-500/20 text-indigo-300 shadow-sm'
-                  : 'border border-transparent bg-slate-800/60 text-slate-400'
+                ? 'border border-indigo-500/40 bg-indigo-500/20 text-indigo-300 shadow-sm'
+                : 'border border-transparent bg-slate-800/60 text-slate-400'
                 }`}
             >
               DIVIDEN

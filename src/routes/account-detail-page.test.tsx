@@ -28,6 +28,7 @@ const accounts = [
         name: 'Bank Utama',
         balance: '12500.00',
         currency: 'IDR',
+        version: '1',
         parent_account_id: null,
     },
     {
@@ -35,6 +36,7 @@ const accounts = [
         name: 'Dana Darurat',
         balance: '3000.00',
         currency: 'IDR',
+        version: '1',
         parent_account_id: parentId,
     },
 ]
@@ -107,6 +109,9 @@ it.each([parentId, childId])(
         ).toBeVisible()
         expect(screen.getByText('IDR')).toBeVisible()
         expect(
+            screen.queryByRole('heading', { name: 'Kartu Kredit Pribadi' }),
+        ).not.toBeInTheDocument()
+        expect(
             screen.getByText(id === parentId ? /12\.500/ : /3\.000/),
         ).toBeVisible()
         expect(
@@ -134,6 +139,32 @@ it.each([parentId, childId])(
         expect(requests.at(-1)?.searchParams.get('account_id')).toBe(id)
     },
 )
+
+it('renders credit card metadata alongside account transaction history', async () => {
+    server.use(
+        http.get('*/accounts', () =>
+            HttpResponse.json({
+                data: [
+                    {
+                        ...accounts[0],
+                        balance: '-2500.00',
+                        is_credit_card: true,
+                        credit_limit: '10000.00',
+                    },
+                ],
+            }),
+        ),
+    )
+    renderDetail()
+    expect(await screen.findByText('Transaksi halaman 1')).toBeVisible()
+    expect(
+        screen.getByRole('heading', { name: 'Kartu Kredit Pribadi' }),
+    ).toBeVisible()
+    expect(screen.getByText('Utang Terpakai:')).toBeVisible()
+    expect(screen.getByText('Sisa Limit:')).toBeVisible()
+    expect(screen.getByText(/7\.500/)).toBeVisible()
+    expect(screen.getByText('Kelebihan Bayar:')).toBeVisible()
+})
 
 it('shows loading while transaction history is pending', async () => {
     let release: (() => void) | undefined

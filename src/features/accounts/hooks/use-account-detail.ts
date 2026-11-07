@@ -3,6 +3,7 @@ import { apiClient } from '@/lib/api-client'
 import type { ApiResponse } from '@/types/api'
 import type { AccountDto } from '../types/account'
 import { accountKeys } from './use-accounts'
+import { parseAccount } from '../api/account-api'
 
 // The backend exposes only the paginated collection, not GET /accounts/:id.
 export function useAccountDetail(accountId: string) {
@@ -18,7 +19,7 @@ export function useAccountDetail(accountId: string) {
             params: { page, limit: 100 },
           },
         )
-        accounts.push(...response.data.data)
+        accounts.push(...response.data.data.map(parseAccount))
         const account = accounts.find((entry) => entry.id === accountId)
         const parent = accounts.find(
           (entry) => entry.id === account?.parent_account_id,

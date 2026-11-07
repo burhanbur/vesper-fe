@@ -18,7 +18,7 @@ interface AllocationBucket {
 export function AssetAllocationChart({ accounts }: AssetAllocationChartProps) {
   // Aggregate accounts into buckets
   const activeAccounts = accounts.filter(
-    (a) => a.is_include_total && !a.deleted_at && !a.parent_account_id,
+    (a) => !a.is_credit_card && a.is_include_total && !a.deleted_at && !a.parent_account_id,
   )
 
   const totalBalance = activeAccounts.reduce(

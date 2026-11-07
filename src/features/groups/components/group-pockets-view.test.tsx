@@ -129,6 +129,23 @@ afterEach(() => {
 afterAll(() => server.close())
 
 describe('GroupPocketsView', () => {
+    it('never offers an explicit credit card for group pocket assignment', async () => {
+        server.use(http.get('*/accounts', () => HttpResponse.json({
+            data: [
+                ...mockAccounts,
+                { ...mockAccounts[1], id: 'card', name: 'Kartu Pribadi', is_credit_card: true, credit_limit: null },
+            ]
+        })))
+        const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+        render(<QueryClientProvider client={client}><GroupPocketsView groupId="group-1" /></QueryClientProvider>)
+        const user = userEvent.setup()
+        await screen.findByText('Belanja Bulanan')
+        await user.click(screen.getByRole('button', { name: /Kelola & Rincian/i }))
+        expect(await screen.findByRole('option', { name: /Mandiri Tabungan/ })).toBeInTheDocument()
+        expect(screen.queryByRole('option', { name: /Kartu Pribadi/ })).not.toBeInTheDocument()
+        client.clear()
+    })
+
     it('renders group pockets with transparent notice, balances, and linked accounts', async () => {
         const client = new QueryClient({
             defaultOptions: { queries: { retry: false } },

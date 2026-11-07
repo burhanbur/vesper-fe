@@ -52,7 +52,8 @@ export function MoneyManagerWizard() {
   >({})
 
   // Queries
-  const { data: vesperAccounts = [] } = useAccounts()
+  const { data: allVesperAccounts = [] } = useAccounts()
+  const vesperAccounts = useMemo(() => allVesperAccounts.filter((account) => !account.is_credit_card), [allVesperAccounts])
   const { data: vesperAccountTypes = [] } = useAccountTypes()
   const { data: vesperCategories = [] } = useCategories()
 

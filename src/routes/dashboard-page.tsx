@@ -36,6 +36,7 @@ import { TransactionFormDialog } from '@/features/transactions/components/transa
 import { TransferFormDialog } from '@/features/transactions/components/transfer-form-dialog'
 import { useTransactions } from '@/features/transactions'
 import { formatDate, formatRupiah } from '@/lib/formatters'
+import { moneyUnits, moneyDecimal, formatExactRupiah } from '@/features/accounts/utils/credit-card'
 
 export function DashboardPage() {
   const navigate = useNavigate()
@@ -65,11 +66,11 @@ export function DashboardPage() {
   const { data: budgets = [] } = useBudgets()
   const { data: instruments = [] } = useInstruments()
 
-  const dashboardAccounts = visibleDashboardAccounts(accounts)
+  const dashboardAccounts = visibleDashboardAccounts(accounts).filter((account) => !account.is_credit_card)
   const includedAccounts = includedDashboardAccounts(accounts)
   const totalNetWorth = includedAccounts.reduce(
-    (sum, acc) => sum + Number.parseFloat(acc.balance || '0'),
-    0,
+    (sum, acc) => sum + moneyUnits(acc.balance),
+    0n,
   )
 
   const incomeTotal = Number(summary.data?.income_total ?? 0)
@@ -181,7 +182,7 @@ export function DashboardPage() {
                 Total Kekayaan Bersih (Net Worth)
               </span>
               <CardTitle className="pt-1 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl dark:text-white">
-                {accountsLoading ? 'Memuat…' : formatRupiah(totalNetWorth)}
+                {accountsLoading ? 'Memuat…' : formatExactRupiah(moneyDecimal(totalNetWorth))}
               </CardTitle>
             </CardHeader>
             <CardContent>

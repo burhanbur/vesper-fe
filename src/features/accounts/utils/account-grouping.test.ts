@@ -130,8 +130,8 @@ describe('account-grouping utils', () => {
             balance: '25000',
         })
 
-        expect(getEffectiveBalance(parent, [child1, child2])).toBe(75000)
-        expect(getEffectiveBalance(child1, [])).toBe(50000)
+        expect(getEffectiveBalance(parent, [child1, child2])).toBe(7500000n)
+        expect(getEffectiveBalance(child1, [])).toBe(5000000n)
     })
 
     it('sorts accounts by balance descending and ascending', () => {
@@ -187,11 +187,11 @@ describe('account-grouping utils', () => {
 
         expect(groups.length).toBe(3)
         expect(groups[0]?.key).toBe('bank')
-        expect(groups[0]?.totalBalance).toBe(2000000)
+        expect(groups[0]?.totalBalance).toBe(200000000n)
         expect(groups[1]?.key).toBe('ewallet')
-        expect(groups[1]?.totalBalance).toBe(50000)
+        expect(groups[1]?.totalBalance).toBe(5000000n)
         expect(groups[2]?.key).toBe('investment')
-        expect(groups[2]?.totalBalance).toBe(10000000)
+        expect(groups[2]?.totalBalance).toBe(1000000000n)
     })
 
     it('computes overall accounts overview metrics accurately', () => {
@@ -228,8 +228,8 @@ describe('account-grouping utils', () => {
 
         expect(overview.totalParentAccounts).toBe(3)
         expect(overview.zeroBalanceCount).toBe(1)
-        expect(overview.liquidCash).toBe(1000000)
-        expect(overview.liabilities).toBe(200000)
-        expect(overview.netWorth).toBe(1200000) // both have is_include_total: true
+        expect(overview.liquidCash).toBe(100000000n)
+        expect(overview.liabilities).toBe(20000000n)
+        expect(overview.netWorth).toBe(120000000n) // both have is_include_total: true
     })
 })

@@ -1,4 +1,9 @@
 import { apiClient } from '@/lib/api-client'
+import { accountCardMetadataSchema } from '../schemas/account-schema'
+
+export function parseAccount(account: AccountDto): AccountDto {
+  return { ...account, ...accountCardMetadataSchema.parse(account) }
+}
 import type { ApiResponse } from '@/types/api'
 import type {
   AccountDto,
@@ -16,7 +21,7 @@ export async function fetchAccounts(params?: {
   const response = await apiClient.get<ApiResponse<AccountDto[]>>('/accounts', {
     params: { limit: 100, ...params },
   })
-  return response.data.data
+  return response.data.data.map(parseAccount)
 }
 
 export async function fetchAccountTypes(): Promise<AccountTypeDto[]> {
@@ -36,7 +41,7 @@ export async function createAccount(
     '/accounts',
     input,
   )
-  return response.data.data
+  return parseAccount(response.data.data)
 }
 
 export async function updateAccount(
@@ -47,7 +52,7 @@ export async function updateAccount(
     `/accounts/${id}`,
     input,
   )
-  return response.data.data
+  return parseAccount(response.data.data)
 }
 
 export async function deleteAccount(

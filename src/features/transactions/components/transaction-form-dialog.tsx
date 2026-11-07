@@ -1,4 +1,4 @@
-import { type SyntheticEvent, useMemo, useState } from 'react'
+import { type SyntheticEvent, useMemo, useRef, useState } from 'react'
 import {
   AlertCircle,
   ArrowDownRight,
@@ -24,6 +24,7 @@ import {
   useAccountTypes,
 } from '@/features/accounts'
 import { useCategories } from '@/features/categories'
+import { useAuth } from '@/features/auth'
 import { parseCurrency, sanitizeCurrency } from '@/lib/currency'
 import { formatRupiah } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
@@ -31,6 +32,15 @@ import { InlineTimezoneSelect } from '@/components/common/timezone-selector'
 import { useTimezone } from '@/hooks/use-timezone'
 import { fromDatetimeLocalValue, toDatetimeLocalValue } from '@/lib/timezone'
 import { useCreateTransaction } from '../hooks/use-transactions'
+import { ApiError } from '@/lib/api-error'
+import { CreditCardSummary } from '@/features/accounts/components/credit-card-summary'
+import {
+  isActiveLeaf,
+  isPositiveMoney,
+  moneyUnits,
+  moneyDecimal,
+  formatExactRupiah,
+} from '@/features/accounts'
 
 interface TransactionFormDialogProps {
   readonly open: boolean
@@ -404,7 +414,7 @@ interface TransactionAccountSectionProps {
   readonly onAccountChange: (id: string) => void
   readonly accountOptions: Select2Option[]
   readonly currentAccountName?: string | undefined
-  readonly currentAccountBalance?: string | number | undefined
+  readonly currentAccountBalance?: string | undefined
 }
 
 function TransactionAccountSection({
@@ -424,7 +434,7 @@ function TransactionAccountSection({
           <span className="text-[11px] text-slate-500 dark:text-slate-400">
             Saldo:{' '}
             <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
-              {formatRupiah(currentAccountBalance ?? 0)}
+              {formatExactRupiah(currentAccountBalance ?? '0')}
             </span>
           </span>
         ) : null}
@@ -493,6 +503,7 @@ function TransactionFormInner({
   onClose,
 }: TransactionFormInnerProps) {
   const { timezone } = useTimezone()
+  const { user } = useAuth()
   const [formTimezone, setFormTimezone] = useState(timezone)
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>(initialType)
   const [accountId, setAccountId] = useState('')
@@ -508,13 +519,26 @@ function TransactionFormInner({
   const { data: accountTypes = [] } = useAccountTypes()
   const { data: categories = [] } = useCategories({ type })
   const createTx = useCreateTransaction()
+  const submitting = useRef(false)
+  const [uncertain, setUncertain] = useState(false)
 
   const accountTypeMap = useMemo(() => {
     return new Map(accountTypes.map((t) => [t.id, t]))
   }, [accountTypes])
 
   // Default select first items when loaded
-  const selectedAccount = accountId || (accounts[0]?.id ?? '')
+  const eligibleAccounts = accounts.filter(
+    (account) =>
+      isActiveLeaf(account, accounts) &&
+      (!account.is_credit_card ||
+        (type === 'EXPENSE' &&
+          account.user_id === user?.id &&
+          account.currency === 'IDR' &&
+          !account.parent_account_id)),
+  )
+  const selectedAccount =
+    eligibleAccounts.find((account) => account.id === accountId)?.id ||
+    (eligibleAccounts[0]?.id ?? '')
   const selectedCategory = categoryId || (categories[0]?.id ?? '')
 
   const currentAccount = useMemo(
@@ -523,31 +547,41 @@ function TransactionFormInner({
   )
 
   const accountOptions = useMemo<Select2Option[]>(() => {
-    return accounts.map((acc) => {
-      const accType = accountTypeMap.get(acc.account_type_id)
-      const visual = getAccountVisual(acc, accType)
-      const VisualIcon = visual.icon
+    return accounts
+      .filter(
+        (account) =>
+          isActiveLeaf(account, accounts) &&
+          (!account.is_credit_card ||
+            (type === 'EXPENSE' &&
+              account.user_id === user?.id &&
+              account.currency === 'IDR' &&
+              !account.parent_account_id)),
+      )
+      .map((acc) => {
+        const accType = accountTypeMap.get(acc.account_type_id)
+        const visual = getAccountVisual(acc, accType)
+        const VisualIcon = visual.icon
 
-      return {
-        value: acc.id,
-        label: acc.name,
-        badge: visual.brandBadge ?? accType?.name,
-        description: `Saldo: ${formatRupiah(acc.balance)}`,
-        icon: (
-          <div
-            className={cn(
-              'grid size-6 shrink-0 place-items-center rounded-md border text-xs',
-              visual.badgeBg,
-              visual.badgeBorder,
-              visual.badgeText,
-            )}
-          >
-            <VisualIcon className="size-3.5" />
-          </div>
-        ),
-      }
-    })
-  }, [accounts, accountTypeMap])
+        return {
+          value: acc.id,
+          label: acc.name,
+          badge: visual.brandBadge ?? accType?.name,
+          description: `Saldo: ${acc.is_credit_card ? formatExactRupiah(acc.balance) : formatRupiah(acc.balance)}`,
+          icon: (
+            <div
+              className={cn(
+                'grid size-6 shrink-0 place-items-center rounded-md border text-xs',
+                visual.badgeBg,
+                visual.badgeBorder,
+                visual.badgeText,
+              )}
+            >
+              <VisualIcon className="size-3.5" />
+            </div>
+          ),
+        }
+      })
+  }, [accounts, accountTypeMap, type, user?.id])
 
   const categoryOptions = useMemo<Select2Option[]>(() => {
     return categories.map((cat) => ({
@@ -570,7 +604,10 @@ function TransactionFormInner({
   }, [categories])
 
   const numAmount = parseCurrency(amount)
-  const currentBalanceNum = currentAccount ? Number(currentAccount.balance) : 0
+  const currentBalanceNum =
+    currentAccount && !currentAccount.is_credit_card
+      ? Number(currentAccount.balance)
+      : 0
   const newBalance =
     type === 'EXPENSE'
       ? currentBalanceNum - numAmount
@@ -578,6 +615,7 @@ function TransactionFormInner({
   const isInsufficientBalance = Boolean(
     type === 'EXPENSE' &&
     currentAccount &&
+    !currentAccount.is_credit_card &&
     numAmount > 0 &&
     numAmount > currentBalanceNum,
   )
@@ -610,9 +648,12 @@ function TransactionFormInner({
 
   async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
+    if (submitting.current || uncertain) return
     setError(null)
 
-    if (numAmount <= 0) {
+    if (
+      currentAccount?.is_credit_card ? !isPositiveMoney(amount) : numAmount <= 0
+    ) {
       setError('Masukkan nominal transaksi yang valid.')
       return
     }
@@ -622,26 +663,47 @@ function TransactionFormInner({
       return
     }
 
+    if (
+      currentAccount?.is_credit_card &&
+      !/^\d{1,18}(\.\d{1,2})?$/.test(amount)
+    ) {
+      setError('Masukkan nominal dengan titik desimal, maksimal dua desimal.')
+      return
+    }
     if (!selectedCategory) {
       setError('Pilih kategori transaksi.')
       return
     }
 
+    submitting.current = true
     try {
       await createTx.mutateAsync({
         account_id: selectedAccount,
         category_id: selectedCategory,
         type,
-        amount: sanitizeCurrency(amount, { toFixed: 2 }),
+        amount: currentAccount?.is_credit_card
+          ? moneyDecimal(moneyUnits(amount))
+          : sanitizeCurrency(amount, { toFixed: 2 }),
         transacted_at: fromDatetimeLocalValue(date, formTimezone),
         description: description.trim() || null,
       })
       resetForm()
       onClose()
-    } catch (err) {
+    } catch (error) {
+      const rejected =
+        error instanceof ApiError &&
+        error.status !== undefined &&
+        error.status >= 400 &&
+        error.status < 500 &&
+        error.status !== 408
+      setUncertain(!rejected)
       setError(
-        err instanceof Error ? err.message : 'Gagal menyimpan transaksi.',
+        rejected
+          ? 'Transaksi ditolak. Periksa akun, kategori, nominal, dan saldo terbaru sebelum mencoba lagi.'
+          : 'Hasil transaksi belum dapat dipastikan. Periksa riwayat dan muat ulang saldo sebelum mencatat ulang.',
       )
+    } finally {
+      submitting.current = false
     }
   }
 
@@ -665,15 +727,35 @@ function TransactionFormInner({
         <TransactionTypeSelector type={type} onChange={handleTypeChange} />
 
         {/* Amount Section */}
-        <TransactionAmountSection
-          type={type}
-          amount={amount}
-          onAmountChange={setAmount}
-          onAddAmount={handleAddAmount}
-          isInsufficientBalance={isInsufficientBalance}
-          currentAccountName={currentAccount?.name}
-          currentAccountBalance={currentAccount?.balance}
-        />
+        {currentAccount?.is_credit_card ? (
+          <div className="space-y-2">
+            <label htmlFor="card-expense-amount">
+              Nominal Pengeluaran (IDR)
+            </label>
+            <Input
+              id="card-expense-amount"
+              inputMode="decimal"
+              value={amount}
+              onChange={(event) => setAmount(event.target.value)}
+              placeholder="200000.00"
+              required
+            />
+            <p className="text-xs">
+              Gunakan titik untuk desimal. Pengeluaran tetap boleh melebihi
+              limit.
+            </p>
+          </div>
+        ) : (
+          <TransactionAmountSection
+            type={type}
+            amount={amount}
+            onAmountChange={setAmount}
+            onAddAmount={handleAddAmount}
+            isInsufficientBalance={isInsufficientBalance}
+            currentAccountName={currentAccount?.name}
+            currentAccountBalance={currentAccount?.balance}
+          />
+        )}
 
         {/* Account Picker */}
         <TransactionAccountSection
@@ -694,7 +776,17 @@ function TransactionFormInner({
         />
 
         {/* Balance Simulation Card */}
-        {numAmount > 0 && currentAccount ? (
+        {currentAccount?.is_credit_card && /^\d+(\.\d{1,2})?$/.test(amount) ? (
+          <CreditCardSummary
+            account={{
+              ...currentAccount,
+              balance: moneyDecimal(
+                moneyUnits(currentAccount.balance) - moneyUnits(amount),
+              ),
+            }}
+          />
+        ) : null}
+        {numAmount > 0 && currentAccount && !currentAccount.is_credit_card ? (
           <TransactionSimulationCard
             type={type}
             accountName={currentAccount.name}
@@ -756,8 +848,11 @@ function TransactionFormInner({
           type="submit"
           variant={type === 'EXPENSE' ? 'destructive' : 'emerald'}
           disabled={
+            uncertain ||
             createTx.isPending ||
-            numAmount <= 0 ||
+            (currentAccount?.is_credit_card
+              ? !isPositiveMoney(amount)
+              : numAmount <= 0) ||
             !selectedAccount ||
             !selectedCategory
           }

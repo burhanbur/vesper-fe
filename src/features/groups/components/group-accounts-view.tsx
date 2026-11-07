@@ -59,7 +59,7 @@ export function GroupAccountsView({ groupId }: GroupAccountsViewProps) {
     // Filter accounts that are not yet shared
     const sharedAccountIds = new Set(sharedAccounts.map((s) => s.account_id))
     const availableAccounts = allAccounts.filter(
-        (a) => !sharedAccountIds.has(a.id) && !a.deleted_at,
+        (a) => !a.is_credit_card && !sharedAccountIds.has(a.id) && !a.deleted_at,
     )
 
     // Map to get live balance/currency for shared accounts
@@ -67,7 +67,7 @@ export function GroupAccountsView({ groupId }: GroupAccountsViewProps) {
 
     async function handleShareAccount(e: SyntheticEvent<HTMLFormElement>) {
         e.preventDefault()
-        if (!selectedAccountId) return
+        if (!availableAccounts.some((account) => account.id === selectedAccountId)) return
 
         try {
             await shareAccount.mutateAsync({

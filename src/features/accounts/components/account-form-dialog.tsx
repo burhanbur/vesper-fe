@@ -1,5 +1,11 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { accountFormSchema } from '../schemas/account-schema'
+import type { z } from 'zod'
 import { Wallet } from 'lucide-react'
+import { env } from '@/config/env'
+import { ApiError } from '@/lib/api-error'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -35,58 +41,92 @@ export function AccountFormDialog({
   open,
   onOpenChange,
 }: AccountFormDialogProps) {
-  const [name, setName] = useState('')
-  const [accountTypeId, setAccountTypeId] = useState('')
-  const [parentAccountId, setParentAccountId] = useState('')
-  const [icon, setIcon] = useState('bank')
-  const [description, setDescription] = useState('')
-  const [isIncludeTotal, setIsIncludeTotal] = useState(true)
+  const {
+    register,
+    control,
+    setValue,
+    reset,
+    handleSubmit: submitForm,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(accountFormSchema),
+    defaultValues: {
+      name: '',
+      account_type_id: '',
+      parent_account_id: '',
+      icon: 'bank',
+      description: '',
+      is_include_total: true,
+      is_credit_card: false,
+      credit_limit: '',
+    },
+  })
+  const isCreditCard = useWatch({ control, name: 'is_credit_card' })
+  const submitting = useRef(false)
   const [error, setError] = useState<string | null>(null)
+  const [uncertain, setUncertain] = useState(false)
 
   const { data: accountTypes = [] } = useAccountTypes()
   const { data: accounts = [] } = useAccounts()
   const createAccount = useCreateAccount()
 
-  const selectedType = accountTypeId || (accountTypes[0]?.id ?? '')
+  const eligibleTypes = accountTypes.filter(
+    (type) => !isCreditCard || type.category === 'CASH',
+  )
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleSubmit(values: z.infer<typeof accountFormSchema>) {
+    if (submitting.current || uncertain) return
     setError(null)
-
-    if (!name.trim()) {
-      setError('Nama akun wajib diisi.')
+    if (values.is_credit_card && !env.enableCreditCardCreation) {
+      setError(
+        'Pembuatan kartu kredit belum tersedia. Akun dan riwayat yang ada tetap dapat dilihat.',
+      )
       return
     }
-
-    if (!selectedType) {
-      setError('Pilih tipe akun.')
+    if (!eligibleTypes.some((type) => type.id === values.account_type_id)) {
+      setError('Pilih tipe CASH untuk kartu kredit.')
       return
     }
-
+    submitting.current = true
     try {
       await createAccount.mutateAsync({
-        name: name.trim(),
-        account_type_id: selectedType,
-        parent_account_id: parentAccountId || null,
-        icon,
+        name: values.name,
+        account_type_id: values.account_type_id,
+        parent_account_id: isCreditCard
+          ? null
+          : values.parent_account_id || null,
+        icon: values.icon,
         currency: 'IDR',
-        description: description.trim() || null,
-        is_include_total: isIncludeTotal,
+        description: values.description.trim() || null,
+        is_include_total: values.is_include_total,
+        is_credit_card: isCreditCard,
+        credit_limit: isCreditCard ? values.credit_limit || null : null,
         is_visible: true,
         sequence_order: '0',
       })
-      setName('')
-      setDescription('')
-      setParentAccountId('')
+      reset()
       onOpenChange(false)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal membuat akun baru.')
+    } catch (error) {
+      const rejected =
+        error instanceof ApiError &&
+        error.status !== undefined &&
+        error.status >= 400 &&
+        error.status < 500 &&
+        error.status !== 408
+      setUncertain(!rejected)
+      setError(
+        rejected
+          ? 'Akun ditolak. Periksa isian sebelum mencoba lagi.'
+          : 'Hasil pembuatan akun belum dapat dipastikan. Periksa daftar akun sebelum mencatat ulang.',
+      )
+    } finally {
+      submitting.current = false
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <form onSubmit={(e) => void handleSubmit(e)}>
+      <form onSubmit={(e) => void submitForm(handleSubmit)(e)}>
         <DialogHeader onClose={() => onOpenChange(false)}>
           <DialogTitle className="flex items-center gap-2">
             <Wallet className="size-5 text-indigo-400" />
@@ -104,6 +144,54 @@ export function AccountFormDialog({
             </div>
           ) : null}
 
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              disabled={!env.enableCreditCardCreation}
+              type="checkbox"
+              {...register('is_credit_card')}
+              onChange={(event) => {
+                setValue('is_credit_card', event.target.checked)
+                setValue('account_type_id', '')
+                setValue('parent_account_id', '')
+              }}
+            />
+            Kartu Kredit (pribadi)
+          </label>
+          {!env.enableCreditCardCreation && (
+            <p className="text-xs">
+              Pembuatan kartu kredit belum tersedia. Akun dan riwayat yang ada
+              tetap dapat dilihat.
+            </p>
+          )}
+          {isCreditCard && (
+            <>
+              <p className="text-xs text-slate-500">
+                Akun pribadi IDR, saldo awal nol, tanpa kantong atau berbagi
+                grup. Jenis kartu tidak dapat diubah. Limit dan kelebihan bayar
+                bukan kas likuid.
+              </p>
+              <label htmlFor="acc-limit" className="text-sm">
+                Limit Kredit (opsional)
+              </label>
+              <Input
+                id="acc-limit"
+                inputMode="decimal"
+                placeholder="1000000.00"
+                {...register('credit_limit')}
+              />
+              <p className="text-xs">
+                Kosongkan untuk Limit Tidak Dipantau. Gunakan titik untuk
+                desimal.
+              </p>
+            </>
+          )}
+          {Object.keys(errors).length > 0 && (
+            <p role="alert" className="text-sm text-rose-500">
+              {Object.values(errors)
+                .map((field) => field.message)
+                .join(' ')}
+            </p>
+          )}
           {/* Name */}
           <div className="space-y-1.5">
             <label
@@ -115,8 +203,7 @@ export function AccountFormDialog({
             <Input
               id="acc-name"
               placeholder="Contoh: BCA Utama, Gopay, Kantong Tabungan"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              {...register('name')}
               required
             />
           </div>
@@ -129,12 +216,9 @@ export function AccountFormDialog({
             >
               Tipe Akun
             </label>
-            <Select
-              id="acc-type"
-              value={selectedType}
-              onChange={(e) => setAccountTypeId(e.target.value)}
-            >
-              {accountTypes.map((t) => (
+            <Select id="acc-type" {...register('account_type_id')}>
+              <option value="">Pilih tipe akun</option>
+              {eligibleTypes.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name} ({t.category})
                 </option>
@@ -152,15 +236,19 @@ export function AccountFormDialog({
             </label>
             <Select
               id="acc-parent"
-              value={parentAccountId}
-              onChange={(e) => setParentAccountId(e.target.value)}
+              {...register('parent_account_id')}
+              disabled={isCreditCard}
             >
               <option value="">-- Tidak ada (Akun Utama / Mandiri) --</option>
-              {accounts.map((acc) => (
-                <option key={acc.id} value={acc.id}>
-                  {acc.name}
-                </option>
-              ))}
+              {accounts
+                .filter(
+                  (account) => !account.is_credit_card && !account.deleted_at,
+                )
+                .map((acc) => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.name}
+                  </option>
+                ))}
             </Select>
             <p className="text-[11px] text-slate-500">
               Pilih akun induk jika ini adalah pocket/kantong di dalam bank yang
@@ -176,11 +264,7 @@ export function AccountFormDialog({
             >
               Ikon Tampilan
             </label>
-            <Select
-              id="acc-icon"
-              value={icon}
-              onChange={(e) => setIcon(e.target.value)}
-            >
+            <Select id="acc-icon" {...register('icon')}>
               {ICONS.map((ic) => (
                 <option key={ic.value} value={ic.value}>
                   {ic.label}
@@ -194,8 +278,7 @@ export function AccountFormDialog({
             <input
               type="checkbox"
               id="acc-include-total"
-              checked={isIncludeTotal}
-              onChange={(e) => setIsIncludeTotal(e.target.checked)}
+              {...register('is_include_total')}
               className="size-4 rounded border-slate-700 bg-slate-800 text-indigo-600 focus:ring-indigo-500"
             />
             <label
@@ -217,8 +300,7 @@ export function AccountFormDialog({
             <Input
               id="acc-desc"
               placeholder="Catatan rekening..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              {...register('description')}
             />
           </div>
         </div>
@@ -234,7 +316,7 @@ export function AccountFormDialog({
           <Button
             type="submit"
             variant="default"
-            disabled={createAccount.isPending}
+            disabled={createAccount.isPending || uncertain}
           >
             {createAccount.isPending ? 'Menyimpan…' : 'Simpan Akun'}
           </Button>

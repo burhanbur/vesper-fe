@@ -17,6 +17,8 @@ import {
 } from '../utils/account-grouping'
 import { getAccountVisual } from '../utils/account-visuals'
 import { formatRupiah } from '@/lib/formatters'
+import { CreditCardSummary } from './credit-card-summary'
+import { formatExactRupiah, moneyDecimal } from '../utils/credit-card'
 
 interface AccountCardItemProps {
     readonly parent: AccountDto
@@ -43,7 +45,7 @@ export function AccountCardItem({
     const hasChildren = childrenList.length > 0
     const parentType = typeMap.get(parent.account_type_id)
     const totalBalance = getEffectiveBalance(parent, childrenList)
-    const isZeroBalance = totalBalance === 0
+    const isZeroBalance = totalBalance === 0n
     const visual = getAccountVisual(parent, parentType)
     const VisualIcon = visual.icon
 
@@ -82,6 +84,9 @@ export function AccountCardItem({
                             <h3 className="truncate text-sm font-semibold tracking-tight text-slate-900 sm:text-base dark:text-white">
                                 {parent.name}
                             </h3>
+                            {parent.is_credit_card && (
+                                <Badge variant="outline">Kartu Kredit</Badge>
+                            )}
                             {hasChildren ? (
                                 <Badge
                                     variant="secondary"
@@ -123,8 +128,9 @@ export function AccountCardItem({
                                         : 'text-slate-900 dark:text-white'
                                 }`}
                         >
-                            {formatRupiah(totalBalance)}
+                            {formatExactRupiah(moneyDecimal(totalBalance))}
                         </p>
+                        {parent.is_credit_card && <CreditCardSummary account={parent} />}
                         {hasChildren ? (
                             <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
                                 Total Gabungan ({childrenList.length} Kantong)

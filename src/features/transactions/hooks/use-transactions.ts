@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { accountKeys } from '@/features/accounts/hooks/use-accounts'
 import { dashboardKeys } from '@/features/dashboard'
+import { budgetKeys } from '@/features/budgets'
+
+function invalidateBudgets(client: ReturnType<typeof useQueryClient>) {
+  void client.invalidateQueries({ queryKey: budgetKeys.all })
+}
 import {
   createTransaction,
   createTransfer,
@@ -38,6 +43,7 @@ export function useCreateTransaction() {
   return useMutation({
     mutationFn: (input: CreateTransactionInput) => createTransaction(input),
     onSuccess: () => {
+      invalidateBudgets(queryClient)
       void queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
       void queryClient.invalidateQueries({ queryKey: transactionKeys.all })
       void queryClient.invalidateQueries({ queryKey: accountKeys.all })
@@ -81,6 +87,7 @@ export function useCreateTransfer() {
   return useMutation({
     mutationFn: (input: CreateTransferInput) => createTransfer(input),
     onSuccess: () => {
+      invalidateBudgets(queryClient)
       void queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
       void queryClient.invalidateQueries({ queryKey: transactionKeys.all })
       void queryClient.invalidateQueries({ queryKey: accountKeys.all })
